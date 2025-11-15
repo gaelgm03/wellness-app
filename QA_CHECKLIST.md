@@ -25,7 +25,7 @@
 - [✅] ✅/❌ Se muestra "Paso 1 de 4"
 - [✅] ✅/❌ Los 4 puntos de progreso se muestran correctamente
 
-**Issue #1.1:** Sin falla
+**Issue #1.1:**
 
 ---
 
@@ -35,7 +35,7 @@
 - [✅] ✅/❌ Al tocar una opción, se marca visualmente (fondo/borde diferente)
 - [✅] ✅/❌ Avanza automáticamente a la pregunta 2 después de 300ms
 
-**Issue #1.2:** Sin falla
+**Issue #1.2:**
 
 ---
 
@@ -47,7 +47,6 @@
 - [✅] ✅/❌ Avanza automáticamente a la pregunta 3
 
 **Issue #1.3:**
-- No es una falla grave pero aparece 5-10 min, 15-20 min y 30+ min.
 ---
 
 ### Test 1.4: Pregunta 3 - Intensidad preferida
@@ -56,19 +55,18 @@
 - [✅] ✅/❌ Hay 3 opciones: "Suave", "Normal", "Activa"
 - [✅] ✅/❌ Avanza automáticamente a la pregunta 4
 
-**Issue #1.4:** Sin falla
+**Issue #1.4:**
 
 ---
 
 ### Test 1.5: Pregunta 4 - Estilo de misión
 - [✅] ✅/❌ Se muestra "🎨 ¿Qué estilo te atrae más?"
 - [✅] ✅/❌ Se muestra "Paso 4 de 4"
-- [✅] ✅/❌ Hay 3 opciones de estilo
+- [✅] ✅/❌ Hay 3 opciones de estilo (Hay 4 opciones)
 - [✅] ✅/❌ Al seleccionar, aparece alert "¡Perfecto! 🎉"
 - [✅] ✅/❌ Al presionar "Comenzar", navega a la pantalla Home (tabs)
 
 **Issue #1.5:** 
-- Revisar misiones
 
 **✅ Log esperado en consola:**
 ```
@@ -91,7 +89,8 @@
 **Issue #2.1:**
 - Aparece mascota pero con fondo png
 - El boton de alimenar esta apretado por el espaci
-- El botón casino esta un poco arriba en el boton
+- El emoji casino no carga
+- Esta otro emoji que no es el de corazon en el contador de corazones
 
 ---
 
@@ -103,6 +102,7 @@
 - [✅] ✅/❌ Muestra "0 Consecutivos días"
 
 **Issue #2.2:**
+- No aparece la barra de progreso y esta todo apretado (mal distribuido)
 
 ---
 
@@ -116,7 +116,7 @@
 - [✅] ✅/❌ Cada misión tiene un botón "Completar"
 
 **Issue #2.3:** 
-- Creo elegi intensidad activa y salen intensidades suaves y normal. Elegi 30+min y las misiones son de 3, 5 y 2 min. No entiendo la relevancia de estilo de mision. Elegi movimiento y solo una mision es de movimiento.
+- Creo elegi intensidad activa y salen intensidades suaves y normal. Elegi 30+min y las misiones son de 3, 5 y 2 min. No entiendo la relevancia de estilo de mision. Elegi movimiento y solo una mision es de movimiento. Yo supongo que tiene que ver por la colección limitada de misiones que hay o por sus etiquetas.
 
 **✅ Log esperado en consola:**
 ```
@@ -213,23 +213,23 @@
 ### Test 5.1: Acceder al casino
 - [✅] ✅/❌ Al presionar botón "🎰 Casino" en Home, navega a pantalla de casino
 - [✅] ✅/❌ Se muestra una ruleta visual
-- [✅] ✅/❌ Se muestra el contador de monedas actual
+- [-] ✅/❌ Se muestra el contador de monedas actual
 - [✅] ✅/❌ Se muestra un botón "Girar Ruleta" o similar
 - [✅] ✅/❌ Se muestra el costo por giro (25 monedas)
 
 **Issue #5.1:** 
-
----
+- El header sale de la pantalla (el contador de monedas)
+-
 
 ### Test 5.2: Girar la ruleta (con monedas)
-- [✅] ✅/❌ Al presionar "Girar", las monedas disminuyen en 25
+- [❌] ✅/❌ Al presionar "Girar", las monedas disminuyen en 25
 - [✅] ✅/❌ La ruleta gira con animación
 - [✅] ✅/❌ Después de 2-3 segundos, se detiene
 - [✅] ✅/❌ Aparece un mensaje mostrando el premio ganado (decoración)
 - [✅] ✅/❌ El premio se añade al inventario
 
 **Issue #5.2:** 
-
+- No disminuyen las monedas
 ---
 
 ### Test 5.3: Girar sin monedas suficientes

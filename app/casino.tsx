@@ -8,17 +8,17 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
-  Alert,
-  Animated,
-  Easing,
-  Platform,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  Vibration,
-  View
+    Alert,
+    Animated,
+    Easing,
+    Platform,
+    SafeAreaView,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    Vibration,
+    View
 } from 'react-native';
 import { Decoration } from '../src/models/Decoration';
 import { GameState } from '../src/models/GameState';
@@ -120,7 +120,7 @@ export default function CasinoScreen() {
 
       // Actualizar estado del juego
       const updatedGameState = GameState.fromJSON(gameState.toJSON());
-      updatedGameState.coins -= result.coinsSpent || 0;
+      updatedGameState.coins = updatedGameState.coins - CasinoService.SPIN_COST;
       
       // Actualizar inventario
       const updatedInventory = [...inventory];
@@ -139,6 +139,7 @@ export default function CasinoScreen() {
       await StorageService.saveGameState(updatedGameState);
       await StorageService.saveInventory(updatedInventory);
       
+      console.log('💰 Casino: Monedas gastadas:', CasinoService.SPIN_COST);
       console.log('💰 Casino: Estado guardado - Monedas restantes:', updatedGameState.coins);
       console.log('🎁 Decoración desbloqueada:', result.prize?.name);
 
@@ -395,7 +396,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
     backgroundColor: '#FFFFFF',
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
@@ -407,8 +409,8 @@ const styles = StyleSheet.create({
   },
   backButton: {
     backgroundColor: '#1F2937',
-    paddingHorizontal: 18,
-    paddingVertical: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
     borderRadius: 16,
     shadowColor: '#1F2937',
     shadowOffset: { width: 0, height: 3 },
@@ -419,20 +421,23 @@ const styles = StyleSheet.create({
   backButtonText: {
     color: '#FFFFFF',
     fontWeight: '700',
-    fontSize: 14,
+    fontSize: 13,
   },
   title: {
-    fontSize: 22,
+    fontSize: 16,
     fontWeight: '800',
     color: '#F59E0B',
     letterSpacing: -0.5,
+    flex: 1,
+    textAlign: 'center',
+    marginHorizontal: 8,
   },
   coinsDisplay: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FFFBEB',
-    paddingHorizontal: 14,
-    paddingVertical: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
     borderRadius: 20,
     borderWidth: 2,
     borderColor: '#F59E0B',
@@ -443,11 +448,11 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   coinsIcon: {
-    fontSize: 18,
-    marginRight: 4,
+    fontSize: 16,
+    marginRight: 3,
   },
   coinsCount: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '800',
     color: '#F59E0B',
   },

@@ -8,20 +8,20 @@ import { useFocusEffect } from '@react-navigation/native';
 import { router } from 'expo-router';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  Animated,
-  Dimensions,
-  Easing,
-  Image,
-  Platform,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  Vibration,
-  View,
+    ActivityIndicator,
+    Alert,
+    Animated,
+    Dimensions,
+    Easing,
+    Image,
+    Platform,
+    SafeAreaView,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    Vibration,
+    View,
 } from 'react-native';
 
 import { BlurView } from 'expo-blur';
@@ -131,12 +131,6 @@ export default function HomeScreen() {
 
       // Cargar estado del juego
       const savedGameState = await StorageService.loadGameState();
-      
-      // 🎰 HACK TEMPORAL: Dar monedas para testing casino
-      if (savedGameState.coins < 100) {
-        savedGameState.coins = 500; // Asegurar que siempre tengas monedas para probar
-        console.log('🪙 Monedas de testing aplicadas:', savedGameState.coins);
-      }
       
       // NUEVO DÍA 2: Verificar si es nuevo día y actualizar misiones
       savedGameState.checkAndResetDailyMissions();
@@ -545,7 +539,7 @@ export default function HomeScreen() {
                 gameState.hearts > 0 && { transform: [{ scale: pulseAnimation }] }
               ]}
             >
-              🥰
+              ❤️
             </Animated.Text>
             <Text style={styles.heartsCount}>{gameState.hearts}</Text>
           </View>
@@ -559,6 +553,7 @@ export default function HomeScreen() {
               updatedGameState.coins += 1000;
               setGameState(updatedGameState);
               await StorageService.saveGameState(updatedGameState);
+              console.log('🪙 Monedas de testing aplicadas:', updatedGameState.coins);
               Alert.alert('🍰', '¡+1000 monedas añadidas para testing!');
             }}
             delayLongPress={3000}
@@ -679,7 +674,7 @@ export default function HomeScreen() {
               styles.petMessage,
               { opacity: pulseAnimation }
             ]}>
-              {petDisplay.mood === 'feliz' ? 'estoy esperando contigo...' : 'necesito tu cuidado...'}
+              {petDisplay.mood === 'feliz' ? '¡Estoy muy feliz contigo! 😊' : 'Necesito tu cuidado... 🥺'}
             </Animated.Text>
           </View>
 
@@ -712,7 +707,7 @@ export default function HomeScreen() {
                 activeOpacity={0.8}
               >
                 <Text style={styles.modernButtonText}>
-                  � Casino
+                  🎰 Casino
                 </Text>
               </TouchableOpacity>
             </Animated.View>
@@ -1479,12 +1474,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
     padding: 20,
+    width: '100%',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
-    alignItems: 'center',
   },
   progressMainStats: {
     marginBottom: 16,
@@ -1511,6 +1506,7 @@ const styles = StyleSheet.create({
   },
   progressBarModern: {
     height: 10,
+    width: '100%',
     backgroundColor: '#E5E7EB',
     borderRadius: 10,
     overflow: 'hidden',
@@ -1527,7 +1523,8 @@ const styles = StyleSheet.create({
   },
   progressBottomStats: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'space-around',
+    width: '100%',
   },
   progressBottomItem: {
     alignItems: 'center',
