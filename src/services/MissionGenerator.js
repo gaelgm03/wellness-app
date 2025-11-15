@@ -227,24 +227,26 @@ export class MissionGenerator {
       return this.getDefaultMissions();
     }
 
-    // ALGORITMO DE SELECCIÓN INTELIGENTE
+    // ALGORITMO DE SELECCIÓN INTELIGENTE MEJORADO
     
-    // 1. Filtrar por estilo preferido (dar preferencia pero no ser restrictivo)
-    const stylePreferredMissions = baseTemplates.filter(template => 
+    // 1. Priorizar misiones que coincidan con el estilo Y objetivo
+    const styleMatchedMissions = baseTemplates.filter(template => 
       template.style.includes(missionStyle)
     );
     
-    const availableMissions = stylePreferredMissions.length >= 2 
-      ? stylePreferredMissions 
+    // 2. Si hay suficientes con el estilo, usar esas; sino usar todas del objetivo
+    const availableMissions = styleMatchedMissions.length >= 3 
+      ? styleMatchedMissions 
       : baseTemplates;
 
-    // 2. Ajustar duración según disponibilidad
+    // 3. Ajustar duración según disponibilidad (CORREGIDO)
     const adjustedMissions = availableMissions.map(template => ({
       ...template,
-      duration: this.adjustDurationByAvailability(template.duration, dailyAvailability)
+      duration: this.adjustDurationByAvailability(template.duration, dailyAvailability),
+      originalDuration: template.duration // Guardar original para debug
     }));
 
-    // 3. Seleccionar 3 misiones variadas
+    // 4. Seleccionar 3 misiones variadas (priorizando wellnessGoal)
     const selectedMissions = this.selectVariedMissions(adjustedMissions, 3);
 
     // 4. Crear objetos Mission con IDs únicos
@@ -262,7 +264,13 @@ export class MissionGenerator {
       missions.push(mission);
     });
 
-    console.log('✅ Misiones generadas:', missions.map(m => m.title));
+    console.log('✅ Misiones generadas:', missions.map(m => `${m.title} (${m.duration}min, ${m.intensity})`));
+    console.log('📊 Preferencias aplicadas:', {
+      objetivo: wellnessGoal,
+      disponibilidad: dailyAvailability,
+      intensidad: preferredIntensity,
+      estilo: missionStyle
+    });
     return missions;
   }
 
@@ -270,16 +278,19 @@ export class MissionGenerator {
    * Ajustar duración según disponibilidad diaria
    */
   static adjustDurationByAvailability(baseDuration, availability) {
-    const multipliers = {
-      baja: 0.7, // Reducir duración para personas con poco tiempo
-      media: 1.0, // Mantener duración original
-      alta: 1.3   // Aumentar duración para personas con más tiempo
+    const adjustments = {
+      baja: { min: 2, max: 8 },    // 5-15 min disponibles → misiones cortas
+      media: { min: 8, max: 20 },   // 15-30 min disponibles → misiones medianas
+      alta: { min: 15, max: 30 }    // 30+ min disponibles → misiones largas
     };
 
-    const adjustedDuration = Math.round(baseDuration * (multipliers[availability] || 1.0));
+    const range = adjustments[availability] || adjustments.media;
     
-    // Mantener entre 2 y 20 minutos
-    return Math.max(2, Math.min(20, adjustedDuration));
+    // Escalar la duración base al rango apropiado
+    const normalized = (baseDuration - 2) / (20 - 2); // Normalizar a 0-1
+    const adjustedDuration = Math.round(range.min + (normalized * (range.max - range.min)));
+    
+    return Math.max(range.min, Math.min(range.max, adjustedDuration));
   }
 
   /**

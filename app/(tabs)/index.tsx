@@ -1,7 +1,7 @@
 /**
  * TAB PRINCIPAL: Home (Wellness Quest)
  * Propósito: Mostrar HomeScreen adaptado para Expo Router
- * Funcionalidades: Mascota, misiones, corazones, progreso
+ * Funcionalidades: Mascota, misiones, monedas, progreso
  */
 
 import { useFocusEffect } from '@react-navigation/native';
@@ -149,7 +149,7 @@ export default function HomeScreen() {
       // 📱 NOTIFICACIONES HABILITADAS (simplificado para demo)
       console.log('📱 Sistema de notificaciones listo');
       
-      console.log('✅ HomeScreen cargado - Corazones:', savedGameState.hearts);
+      console.log('✅ HomeScreen cargado');
       console.log('🪙 Monedas actuales:', savedGameState.coins);
       console.log('🗓️ Días completados:', savedGameState.daysCompleted);  
       console.log('🎯 Misiones de hoy:', savedGameState.dailyMissions.map(m => m.title));
@@ -349,11 +349,7 @@ export default function HomeScreen() {
     ).start();
   }, []);
 
-  useEffect(() => {
-    if (gameState && gameState.hearts > 0) {
-      startHeartPulse();
-    }
-  }, [gameState?.hearts]);
+  // Heart pulse effect removed - no longer using hearts
 
   const handleCompleteMission = async (missionId: string, index: number) => {
     if (!gameState) return;
@@ -375,7 +371,7 @@ export default function HomeScreen() {
 
     Alert.alert(
       '¡Misión completada! ✅',
-      '🎉 Recompensas obtenidas:\n💝 +1 Corazón\n🪙 +10 Monedas',
+      '🎉 Has ganado:\n🪙 +10 Monedas',
       [{ text: '¡Genial!' }]
     );
   };
@@ -455,14 +451,7 @@ export default function HomeScreen() {
       Vibration.vibrate(10);
     }
 
-    if (gameState.hearts === 0) {
-      Alert.alert(
-        'Sin corazones 💔',
-        'Completa misiones para ganar corazones y alimentar a tu mascota',
-        [{ text: 'Entendido' }]
-      );
-      return;
-    }
+    // Verificación removida - ya no usamos corazones
 
     const updatedGameState = GameState.fromJSON(gameState.toJSON());
     const success = updatedGameState.feedPet();
@@ -537,20 +526,7 @@ export default function HomeScreen() {
         </TouchableOpacity>
         
         <View style={styles.currencyContainer}>
-          {/* Corazones */}
-          <View style={styles.heartsContainer}>
-            <Animated.Text 
-              style={[
-                styles.heartsIcon,
-                gameState.hearts > 0 && { transform: [{ scale: pulseAnimation }] }
-              ]}
-            >
-              🥰
-            </Animated.Text>
-            <Text style={styles.heartsCount}>{gameState.hearts}</Text>
-          </View>
-          
-          {/* 🍰 MONEDAS NUEVAS - Con botón secreto para añadir más */}
+          {/* 🍰 MONEDAS */}
           <TouchableOpacity 
             style={styles.coinsContainer}
             onLongPress={async () => {
@@ -559,6 +535,7 @@ export default function HomeScreen() {
               updatedGameState.coins += 1000;
               setGameState(updatedGameState);
               await StorageService.saveGameState(updatedGameState);
+              console.log('🪙 Monedas de testing aplicadas:', updatedGameState.coins);
               Alert.alert('🍰', '¡+1000 monedas añadidas para testing!');
             }}
             delayLongPress={3000}
@@ -679,7 +656,7 @@ export default function HomeScreen() {
               styles.petMessage,
               { opacity: pulseAnimation }
             ]}>
-              {petDisplay.mood === 'feliz' ? 'estoy esperando contigo...' : 'necesito tu cuidado...'}
+              {petDisplay.mood === 'feliz' ? '¡Estoy lleno de energía! 💪' : 'Necesito tu cuidado... 💙'}
             </Animated.Text>
           </View>
 
@@ -689,11 +666,9 @@ export default function HomeScreen() {
               <TouchableOpacity
                 style={[
                   styles.modernButton,
-                  styles.feedButtonModern,
-                  gameState.hearts === 0 && styles.modernButtonDisabled
+                  styles.feedButtonModern
                 ]}
                 onPress={handleFeedPet}
-                disabled={gameState.hearts === 0}
                 activeOpacity={0.8}
               >
                 <Text style={styles.modernButtonText}>
@@ -747,12 +722,22 @@ export default function HomeScreen() {
             </View>
           </View>
           
-          {/* Barra de progreso moderna */}
-          <View style={styles.progressBarModern}>
-            <View style={[
-              styles.progressBarFill, 
-              { width: `${completionPercentage}%` }
-            ]} />
+          {/* Barra de progreso moderna CON GRADIENTE */}
+          <View style={{ width: '100%' }}>
+            <Text style={styles.progressBarLabel}>Progreso:</Text>
+            <View style={styles.progressBarModern}>
+              <LinearGradient
+                colors={completionPercentage === 100 
+                  ? ['#10B981', '#059669'] 
+                  : ['#10B981', '#34D399']}
+                start={{x: 0, y: 0}}
+                end={{x: 1, y: 0}}
+                style={[
+                  styles.progressBarFill, 
+                  { width: `${completionPercentage}%` }
+                ]}
+              />
+            </View>
           </View>
           
           {/* Stats inferiores */}
@@ -843,6 +828,9 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
+    maxWidth: 390, // iPhone 13 width
+    width: '100%',
+    alignSelf: 'center',
     backgroundColor: 'transparent',
   },
   headerBlur: {
@@ -961,21 +949,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
   },
-  heartsContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FDF2F8',
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 2,
-    borderColor: '#EC4899',
-    shadowColor: '#EC4899',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 3,
-  },
   // 🎰 ESTILOS PARA MONEDAS
   coinsContainer: {
     flexDirection: 'row',
@@ -1002,19 +975,11 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: '#F59E0B',
   },
-  heartsIcon: {
-    fontSize: 18,
-    marginRight: 4,
-  },
-  heartsCount: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: '#EC4899',
-  },
   content: {
     flex: 1,
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
     paddingTop: 16,
+    width: '100%',
   },
   sectionTitle: {
     fontSize: 20,
@@ -1217,19 +1182,20 @@ const styles = StyleSheet.create({
   missionsSection: {
     marginBottom: 24,
     width: '100%',
+    paddingHorizontal: 16,
   },
   missionCard: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 18,
-    marginBottom: 14,
-    borderLeftWidth: 5,
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 12,
+    borderLeftWidth: 4,
     borderLeftColor: '#7C3AED',
     shadowColor: '#7C3AED',
-    shadowOffset: { width: 0, height: 3 },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 4,
+    shadowRadius: 4,
+    elevation: 3,
   },
   missionHeader: {
     flexDirection: 'row',
@@ -1279,14 +1245,14 @@ const styles = StyleSheet.create({
   },
   completeButton: {
     backgroundColor: '#10B981',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 16,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 10,
     shadowColor: '#10B981',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 2,
   },
   completeButtonText: {
     color: '#FFFFFF',
@@ -1311,7 +1277,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 20,
     marginBottom: 20,
-    marginHorizontal: 4,
+    marginHorizontal: 16,
     borderWidth: 2,
     borderColor: '#E9D5FF',
     alignItems: 'center',
@@ -1331,14 +1297,15 @@ const styles = StyleSheet.create({
   },
   heroCard: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    padding: 24,
-    marginBottom: 20,
+    borderRadius: 18,
+    padding: 20,
+    marginBottom: 16,
+    marginHorizontal: 16,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    elevation: 5,
     alignItems: 'center',
   },
   heroHeader: {
@@ -1390,22 +1357,15 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   petBackground: {
-    width: 170,
-    height: 130,
-    borderRadius: 24,
-    backgroundColor: '#F3E8FF',
+    width: 160,
+    height: 120,
+    borderRadius: 20,
+    backgroundColor: 'transparent',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 14,
+    marginBottom: 12,
     position: 'relative',
-    overflow: 'hidden',
-    borderWidth: 3,
-    borderColor: '#E9D5FF',
-    shadowColor: '#7C3AED',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 5,
+    overflow: 'visible',
   },
   petImageContainer: {
     width: '100%',
@@ -1414,8 +1374,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   petImage: {
-    width: 150,
-    height: 110,
+    width: '100%',
+    height: '100%',
   },
   petMessage: {
     fontSize: 16,
@@ -1429,27 +1389,28 @@ const styles = StyleSheet.create({
     gap: 12,
     width: '100%',
     justifyContent: 'center',
+    marginTop: 8,
+    paddingHorizontal: 16,
   },
   modernButton: {
     flex: 1,
-    paddingVertical: 16,
-    paddingHorizontal: 24,
-    borderRadius: 16,
+    maxWidth: 165,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 6,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.12,
+    shadowRadius: 4,
+    elevation: 3,
   },
   feedButtonModern: {
-    backgroundColor: '#10B981',
-    shadowColor: '#10B981',
+    backgroundColor: '#EC4899',
   },
   casinoButtonModern: {
-    backgroundColor: '#7C3AED',
-    shadowColor: '#7C3AED',
+    backgroundColor: '#F59E0B',
   },
   modernButtonDisabled: {
     backgroundColor: '#D1D5DB',
@@ -1457,16 +1418,16 @@ const styles = StyleSheet.create({
   },
   modernButtonText: {
     color: '#FFFFFF',
-    fontWeight: '800',
-    fontSize: 15,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    fontWeight: '700',
+    fontSize: 13,
+    letterSpacing: 0.3,
   },
 
   // ESTILOS PARA PROGRESO MODERNO
   progressModernSection: {
     marginBottom: 24,
     width: '100%',
+    paddingHorizontal: 16,
   },
   progressModernTitle: {
     fontSize: 20,
@@ -1499,31 +1460,41 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   progressStatValue: {
-    fontSize: 26,
+    fontSize: 32,
     fontWeight: '800',
-    color: '#1F2937',
-    marginBottom: 2,
+    color: '#7C3AED',
+    marginVertical: 4,
+    letterSpacing: -1,
   },
   progressStatPercentage: {
     fontSize: 18,
     fontWeight: '700',
     color: '#10B981',
   },
+  progressBarLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#6B7280',
+    marginBottom: 6,
+  },
   progressBarModern: {
-    height: 10,
+    height: 16,
     backgroundColor: '#E5E7EB',
-    borderRadius: 10,
+    borderRadius: 12,
     overflow: 'hidden',
-    marginBottom: 16,
+    marginBottom: 18,
+    shadowColor: '#10B981',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
   },
   progressBarFill: {
     height: '100%',
     backgroundColor: '#10B981',
-    borderRadius: 10,
-    shadowColor: '#10B981',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.4,
-    shadowRadius: 4,
+    borderRadius: 12,
   },
   progressBottomStats: {
     flexDirection: 'row',

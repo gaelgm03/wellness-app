@@ -37,6 +37,56 @@ export default function CasinoScreen() {
   const [prizeAnim] = useState(new Animated.Value(0));
   const [spinButtonAnim] = useState(new Animated.Value(1));
   const [backButtonAnim] = useState(new Animated.Value(1));
+  const [rouletteGlow] = useState(new Animated.Value(0));
+  const [colorToggle] = useState(new Animated.Value(0));
+
+  // 🎨 Función para obtener colores según rareza (Color set 1)
+  const getRarityColors = (rarity?: string): [string, string] => {
+    switch (rarity) {
+      case 'legendary':
+        return ['#FFD700', '#FFA500']; // Amarillo dorado brillante
+      case 'epic':
+        return ['#9333EA', '#C084FC']; // Morado vibrante
+      case 'rare':
+        return ['#3B82F6', '#60A5FA']; // Azul brillante
+      case 'common':
+        return ['#6B7280', '#9CA3AF']; // Gris
+      default:
+        return ['#F59E0B', '#FBBF24']; // Dorado por defecto (sin premio aún)
+    }
+  };
+
+  // 🎨 Colores alternos para el parpadeo (Color set 2)
+  const getAlternateColors = (rarity?: string): [string, string] => {
+    switch (rarity) {
+      case 'legendary':
+        return ['#FFA500', '#FFD700']; // Amarillo invertido
+      case 'epic':
+        return ['#C084FC', '#9333EA']; // Morado invertido
+      case 'rare':
+        return ['#60A5FA', '#3B82F6']; // Azul invertido
+      case 'common':
+        return ['#9CA3AF', '#6B7280']; // Gris invertido
+      default:
+        return ['#FBBF24', '#F59E0B']; // Dorado invertido
+    }
+  };
+
+  // ⏱️ Función para obtener velocidad de parpadeo según rareza
+  const getBlinkSpeed = (rarity?: string): number => {
+    switch (rarity) {
+      case 'legendary':
+        return 200; // Muy rápido
+      case 'epic':
+        return 300; // Rápido
+      case 'rare':
+        return 400; // Medio
+      case 'common':
+        return 600; // Lento
+      default:
+        return 400; // Normal
+    }
+  };
 
   useEffect(() => {
     loadCasinoData();
@@ -95,13 +145,50 @@ export default function CasinoScreen() {
 
     setIsSpinning(true);
     
-    // Animación de giro
-    Animated.timing(rouletteAnim, {
-      toValue: 1,
-      duration: 2000,
-      easing: Easing.out(Easing.quad),
-      useNativeDriver: true,
-    }).start();
+    // Animación de giro + parpadeo dinámico + alternancia de colores
+    const blinkSpeed = getBlinkSpeed(lastPrize?.rarity);
+    
+    Animated.parallel([
+      Animated.timing(rouletteAnim, {
+        toValue: 1,
+        duration: 2000,
+        easing: Easing.out(Easing.quad),
+        useNativeDriver: true,
+      }),
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(rouletteGlow, {
+            toValue: 1,
+            duration: blinkSpeed,
+            easing: Easing.inOut(Easing.ease),
+            useNativeDriver: true,
+          }),
+          Animated.timing(rouletteGlow, {
+            toValue: 0,
+            duration: blinkSpeed,
+            easing: Easing.inOut(Easing.ease),
+            useNativeDriver: true,
+          }),
+        ])
+      ),
+      // Alternancia de colores
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(colorToggle, {
+            toValue: 1,
+            duration: blinkSpeed,
+            easing: Easing.linear,
+            useNativeDriver: false,
+          }),
+          Animated.timing(colorToggle, {
+            toValue: 0,
+            duration: blinkSpeed,
+            easing: Easing.linear,
+            useNativeDriver: false,
+          }),
+        ])
+      )
+    ]).start();
 
     // Simular delay del giro
     setTimeout(async () => {
@@ -115,6 +202,10 @@ export default function CasinoScreen() {
         );
         setIsSpinning(false);
         rouletteAnim.setValue(0);
+        rouletteGlow.stopAnimation();
+        rouletteGlow.setValue(0);
+        colorToggle.stopAnimation();
+        colorToggle.setValue(0);
         return;
       }
 
@@ -169,6 +260,10 @@ export default function CasinoScreen() {
 
       setIsSpinning(false);
       rouletteAnim.setValue(0);
+      rouletteGlow.stopAnimation();
+      rouletteGlow.setValue(0);
+      colorToggle.stopAnimation();
+      colorToggle.setValue(0);
     }, 2000);
   };
 
@@ -284,18 +379,69 @@ export default function CasinoScreen() {
           
           <View style={styles.rouletteContainer}>
             <Animated.View style={[
-              styles.roulette,
+              styles.rouletteWrapper,
               {
-                transform: [{
-                  rotate: rouletteAnim.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: ['0deg', '1440deg']
-                  })
-                }]
+                transform: [
+                  {
+                    rotate: rouletteAnim.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: ['0deg', '1440deg']
+                    })
+                  },
+                  {
+                    scale: rouletteGlow.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [1, 1.1]
+                    })
+                  }
+                ],
+                shadowOpacity: rouletteGlow.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [0.3, 0.6]
+                })
               }
             ]}>
-              <Text style={styles.rouletteText}>🎰</Text>
+              {/* Gradiente que alterna entre dos sets de colores */}
+              <Animated.View style={{ 
+                width: '100%', 
+                height: '100%', 
+                position: 'absolute',
+                opacity: colorToggle.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [1, 0]
+                })
+              }}>
+                <LinearGradient
+                  colors={getRarityColors(lastPrize?.rarity)}
+                  start={{x: 0, y: 0}}
+                  end={{x: 1, y: 1}}
+                  style={styles.roulette}
+                />
+              </Animated.View>
+              <Animated.View style={{ 
+                width: '100%', 
+                height: '100%', 
+                position: 'absolute',
+                opacity: colorToggle.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [0, 1]
+                })
+              }}>
+                <LinearGradient
+                  colors={getAlternateColors(lastPrize?.rarity)}
+                  start={{x: 0, y: 0}}
+                  end={{x: 1, y: 1}}
+                  style={styles.roulette}
+                />
+              </Animated.View>
             </Animated.View>
+            
+            {/* Indicador de rareza */}
+            {lastPrize && (
+              <Text style={[styles.rarityIndicator, { color: lastPrize.getRarityColor() }]}>
+                {lastPrize.rarity.toUpperCase()}
+              </Text>
+            )}
             
             {/* Premio flotante */}
             {lastPrize && (
@@ -369,6 +515,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: 'transparent',
+    maxWidth: 390, // iPhone 13 width
+    width: '100%',
+    alignSelf: 'center',
   },
   loadingContainer: {
     flex: 1,
@@ -395,7 +544,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
     backgroundColor: '#FFFFFF',
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
@@ -407,7 +557,7 @@ const styles = StyleSheet.create({
   },
   backButton: {
     backgroundColor: '#1F2937',
-    paddingHorizontal: 18,
+    paddingHorizontal: 14,
     paddingVertical: 10,
     borderRadius: 16,
     shadowColor: '#1F2937',
@@ -418,8 +568,8 @@ const styles = StyleSheet.create({
   },
   backButtonText: {
     color: '#FFFFFF',
-    fontWeight: '700',
     fontSize: 14,
+    fontWeight: '600',
   },
   title: {
     fontSize: 22,
@@ -453,21 +603,22 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
     paddingTop: 16,
     paddingBottom: 20,
   },
   rouletteSection: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    padding: 24,
-    marginBottom: 20,
+    borderRadius: 18,
+    padding: 20,
+    marginBottom: 16,
+    marginHorizontal: 0,
     alignItems: 'center',
     shadowColor: '#F59E0B',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.12,
-    shadowRadius: 8,
-    elevation: 5,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 4,
   },
   sectionTitle: {
     fontSize: 20,
@@ -483,23 +634,37 @@ const styles = StyleSheet.create({
     marginVertical: 20,
     width: '100%',
   },
+  rouletteWrapper: {
+    width: 120,
+    height: 120,
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+    borderRadius: 60,
+    overflow: 'hidden',
+  },
   roulette: {
-    width: 130,
-    height: 130,
-    borderRadius: 65,
-    backgroundColor: '#F59E0B',
+    width: 120,
+    height: 120,
+    borderRadius: 60,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 5,
-    borderColor: '#EC4899',
-    shadowColor: '#F59E0B',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.4,
+    borderColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
     shadowRadius: 10,
     elevation: 8,
   },
-  rouletteText: {
-    fontSize: 48,
+  rarityIndicator: {
+    fontSize: 14,
+    fontWeight: '900',
+    letterSpacing: 1.5,
+    marginTop: 12,
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
   prizeDisplay: {
     position: 'absolute',
@@ -522,15 +687,15 @@ const styles = StyleSheet.create({
   },
   spinButton: {
     backgroundColor: '#F59E0B',
-    paddingHorizontal: 32,
-    paddingVertical: 16,
-    borderRadius: 20,
-    marginBottom: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 28,
+    borderRadius: 16,
     shadowColor: '#F59E0B',
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 6,
+    shadowRadius: 6,
+    elevation: 4,
+    minWidth: 180,
   },
   spinButtonDisabled: {
     backgroundColor: '#D1D5DB',
@@ -538,9 +703,8 @@ const styles = StyleSheet.create({
   },
   spinButtonText: {
     color: '#FFFFFF',
-    fontSize: 17,
-    fontWeight: '800',
-    textAlign: 'center',
+    fontSize: 15,
+    fontWeight: '700',
     letterSpacing: 0.5,
   },
   infoText: {
@@ -551,14 +715,15 @@ const styles = StyleSheet.create({
   },
   statsSection: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    padding: 24,
-    marginBottom: 20,
+    borderRadius: 18,
+    padding: 20,
+    marginBottom: 16,
+    marginHorizontal: 0,
     shadowColor: '#7C3AED',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 5,
+    elevation: 3,
   },
   statsContainer: {
     flexDirection: 'row',
@@ -583,13 +748,14 @@ const styles = StyleSheet.create({
   },
   inventorySection: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    padding: 24,
+    borderRadius: 18,
+    padding: 20,
+    marginHorizontal: 0,
     shadowColor: '#EC4899',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 5,
+    elevation: 3,
   },
   inventoryGrid: {
     flexDirection: 'row',
