@@ -158,4 +158,12 @@ export class StorageService {
   }
 }
 
+// 🔧 Utilidad de desarrollo: exponer reset global para QA/demo
+if (__DEV__) {
+  global.resetWellnessQuestData = async () => {
+    await StorageService.clearAllData();
+    console.log('🧼 AsyncStorage limpiado via resetWellnessQuestData');
+  };
+}
+
 export default StorageService;

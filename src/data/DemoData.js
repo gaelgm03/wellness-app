@@ -197,11 +197,12 @@ export class DemoData {
       // Guardar datos demo
       await StorageService.saveGameState(demoGameState);
       await StorageService.saveUserPreferences(demoPrefs);
-      await StorageService.markOnboardingComplete();
+      await StorageService.setOnboardingCompleted(true);
       
       console.log('🎭 DATOS DEMO APLICADOS EXITOSAMENTE');
       console.log('📊 Estado:', {
         hearts: demoGameState.hearts,
+        coins: demoGameState.coins,
         days: demoGameState.daysCompleted,
         missions: demoGameState.totalMissionsCompleted,
         petMood: demoGameState.pet.mood
