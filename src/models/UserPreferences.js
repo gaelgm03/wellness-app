@@ -56,8 +56,8 @@ export const ONBOARDING_OPTIONS = {
     { key: 'movimiento', label: 'Más Movimiento', icon: '🏃', description: 'Incorporar actividad física' }
   ],
   dailyAvailability: [
-    { key: 'baja', label: '5-10 min', icon: '⏰', description: 'Tengo poco tiempo libre' },
-    { key: 'media', label: '15-20 min', icon: '⏱️', description: 'Tiempo moderado disponible' },
+    { key: 'baja', label: '5-15 min', icon: '⏰', description: 'Tengo poco tiempo libre' },
+    { key: 'media', label: '15-30 min', icon: '⏱️', description: 'Tiempo moderado disponible' },
     { key: 'alta', label: '30+ min', icon: '⏳', description: 'Tengo tiempo suficiente' }
   ],
   preferredIntensity: [

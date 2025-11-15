@@ -40,7 +40,6 @@ export class DemoData {
 
     // Estado del juego con progreso impresionante
     const demoGameState = new GameState({
-      hearts: 3, // Suficientes corazones para demo
       coins: 500, // 🎰 MONEDAS PARA PROBAR EL CASINO
       pet: demoPet,
       userPreferences: demoPrefs,
@@ -101,7 +100,7 @@ export class DemoData {
     return {
       // Usuario nuevo (primer día)
       newUser: {
-        hearts: 0,
+        coins: 0,
         daysCompleted: 0,
         totalMissionsCompleted: 0,
         pet: new Pet({ mood: 'neutro' }),
@@ -110,7 +109,7 @@ export class DemoData {
       
       // Usuario en progreso (día típico)
       activeUser: {
-        hearts: 2,
+        coins: 200,
         daysCompleted: 3,
         totalMissionsCompleted: 15,
         pet: new Pet({ mood: 'feliz' }),
@@ -119,7 +118,7 @@ export class DemoData {
       
       // Usuario champion (racha larga)
       championUser: {
-        hearts: 5,
+        coins: 1500,
         daysCompleted: 15,
         totalMissionsCompleted: 60,
         pet: new Pet({ mood: 'feliz', energy: 100, happiness: 100 }),
@@ -128,7 +127,7 @@ export class DemoData {
       
       // Usuario que necesita motivación
       strugglingUser: {
-        hearts: 0,
+        coins: 30,
         daysCompleted: 1,
         totalMissionsCompleted: 3,
         pet: new Pet({ mood: 'triste' }),
@@ -201,7 +200,6 @@ export class DemoData {
       
       console.log('🎭 DATOS DEMO APLICADOS EXITOSAMENTE');
       console.log('📊 Estado:', {
-        hearts: demoGameState.hearts,
         coins: demoGameState.coins,
         days: demoGameState.daysCompleted,
         missions: demoGameState.totalMissionsCompleted,

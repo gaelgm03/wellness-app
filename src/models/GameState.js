@@ -11,10 +11,7 @@ import { UserPreferences } from './UserPreferences';
 
 export class GameState {
   constructor({
-    // Economía simple (según README)
-    hearts = 0, // Corazones obtenidos (+1 por misión completada, -1 por alimentar mascota)
-    
-    // 🎰 NUEVA ECONOMÍA CASINO (para ruleta y decoraciones)
+    // 🎰 ECONOMÍA CASINO (para ruleta y decoraciones)
     coins = 0, // Monedas obtenidas (+10 por misión completada)
     
     // Mascota emocional
@@ -35,7 +32,6 @@ export class GameState {
     hasCompletedOnboarding = false,
     lastNotificationDate = null
   }) {
-    this.hearts = hearts;
     this.coins = coins;
     this.pet = pet;
     this.userPreferences = userPreferences;
@@ -47,25 +43,20 @@ export class GameState {
     this.lastNotificationDate = lastNotificationDate;
   }
 
-  // ECONOMÍA: Completar misión (+1 corazón + 10 monedas) 🎰
+  // ECONOMÍA: Completar misión (+10 monedas) 🎰
   completeMission(missionId) {
     const mission = this.dailyMissions.find(m => m.id === missionId);
     if (mission && !mission.isCompleted()) {
       mission.complete();
-      this.hearts += 1;
-      this.coins += 10; // ¡Nuevas monedas para el casino!
+      this.coins += 10; // Monedas para el casino
       this.totalMissionsCompleted += 1;
     }
   }
 
-  // ECONOMÍA: Alimentar mascota (-1 corazón)  
+  // ECONOMÍA: Alimentar mascota (sin costo)
   feedPet() {
-    if (this.hearts > 0) {
-      this.hearts -= 1;
-      this.pet.feed();
-      return true;
-    }
-    return false;
+    this.pet.feed();
+    return true;
   }
 
   // PROGRESO: Porcentaje de misiones completadas hoy
@@ -142,7 +133,6 @@ export class GameState {
   // Para persistencia
   toJSON() {
     return {
-      hearts: this.hearts,
       coins: this.coins,
       pet: this.pet,
       userPreferences: this.userPreferences,

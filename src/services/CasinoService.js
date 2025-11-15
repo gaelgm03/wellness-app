@@ -9,7 +9,7 @@ import { AVAILABLE_DECORATIONS, getRandomDecoration } from '../models/Decoration
 export class CasinoService {
   
   // Costo de una tirada en la ruleta
-  static SPIN_COST = 25; // 25 monedas por giro
+  static SPIN_COST = 50// 50 monedas por giro
   
   // 🎰 GIRAR LA RULETA
   static spinRoulette(playerCoins) {
