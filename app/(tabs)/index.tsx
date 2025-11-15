@@ -11,17 +11,21 @@ import {
   ActivityIndicator,
   Alert,
   Animated,
+  Dimensions,
   Easing,
   Image,
+  Platform,
   SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
+  Vibration,
   View,
 } from 'react-native';
 
-// Tipos específicos para evitar conflictos
+import { BlurView } from 'expo-blur';
+import { LinearGradient } from 'expo-linear-gradient';
 import DemoData from '../../src/data/DemoData';
 import { GameState, createInitialGameState } from '../../src/models/GameState';
 
@@ -30,23 +34,43 @@ const PET_IMAGES = {
   happy: require('../../assets/images/pet-happy.jpg'),
   sad: require('../../assets/images/pet-sad.jpg'),
 };
-// import NotificationService from '../../src/services/NotificationService'; // Comentado para evitar errores de build
+
 import StorageService from '../../src/services/StorageService';
 
 export default function HomeScreen() {
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   
-  // 🎨 ANIMACIONES CABRONES (DÍA 3)
+  // 🎨 ANIMACIONES SÚPER FLUIDAS
   const [petAnimation] = useState(new Animated.Value(1));
-  const [heartPulse] = useState(new Animated.Value(1));
-  const [missionCompleteAnim] = useState(new Animated.Value(0));
   const [feedingAnim] = useState(new Animated.Value(0));
+  const [missionCompleteAnim] = useState(new Animated.Value(0));
+  const [floatingAnimation] = useState(new Animated.Value(0));
+  const [pulseAnimation] = useState(new Animated.Value(1));
+  const [glowAnimation] = useState(new Animated.Value(0));
+  const [cardScale] = useState(new Animated.Value(1));
+  const [cardRotation] = useState(new Animated.Value(0));
+  
+  // 🎯 ANIMACIONES PARA BOTONES
+  const [feedButtonAnim] = useState(new Animated.Value(1));
+  const [casinoButtonAnim] = useState(new Animated.Value(1));
+  const [missionButtonAnims] = useState([new Animated.Value(1), new Animated.Value(1), new Animated.Value(1)]);
+  
+  // 🎆 SISTEMA DE PARTÍCULAS
+  const [particleAnimations] = useState(
+    Array(15).fill(null).map(() => ({
+      x: new Animated.Value(0),
+      y: new Animated.Value(0),
+      opacity: new Animated.Value(0),
+      scale: new Animated.Value(0)
+    }))
+  );
+  
+  const { width: screenWidth } = Dimensions.get('window');
 
   // Cargar datos al montar el componente Y cuando regresa el foco
   useEffect(() => {
     loadGameData();
-    startPetAnimation();
     setupNotifications();
   }, []);
 
@@ -180,21 +204,39 @@ export default function HomeScreen() {
 
   // 💖 ANIMACIÓN DE ALIMENTAR MASCOTA
   const animateFeeding = () => {
-    // Animación de corazones flotantes
-    Animated.sequence([
-      Animated.timing(feedingAnim, {
+    // 🎯 Animación de alimentación con spring physics
+    Animated.parallel([
+      Animated.spring(feedingAnim, {
         toValue: 1,
-        duration: 800,
-        easing: Easing.out(Easing.back(1.5)),
+        friction: 2,
+        tension: 150,
         useNativeDriver: true,
       }),
+      Animated.sequence([
+        Animated.spring(cardScale, {
+          toValue: 0.95,
+          friction: 3,
+          tension: 100,
+          useNativeDriver: true,
+        }),
+        Animated.spring(cardScale, {
+          toValue: 1,
+          friction: 3,
+          tension: 100,
+          useNativeDriver: true,
+        }),
+      ]),
+    ]).start(() => {
       Animated.timing(feedingAnim, {
         toValue: 0,
-        duration: 600,
-        easing: Easing.in(Easing.quad),
+        duration: 2000,
+        easing: Easing.out(Easing.exp),
         useNativeDriver: true,
-      }),
-    ]).start();
+      }).start();
+    });
+
+    // 🎯 Trigger particle burst
+    triggerParticleBurst();
 
     // Pulso de mascota feliz
     Animated.sequence([
@@ -217,31 +259,109 @@ export default function HomeScreen() {
   const startHeartPulse = () => {
     Animated.loop(
       Animated.sequence([
-        Animated.timing(heartPulse, {
-          toValue: 1.1,
-          duration: 800,
-          easing: Easing.inOut(Easing.sin),
+        Animated.timing(pulseAnimation, {
+          toValue: 1.05,
+          duration: 1500,
+          easing: Easing.inOut(Easing.ease),
           useNativeDriver: true,
         }),
-        Animated.timing(heartPulse, {
+        Animated.timing(pulseAnimation, {
           toValue: 1,
-          duration: 800,
-          easing: Easing.inOut(Easing.sin),
+          duration: 1500,
+          easing: Easing.inOut(Easing.ease),
           useNativeDriver: true,
         }),
       ])
     ).start();
   };
 
-  // Iniciar animación de corazones cuando hay hearts > 0
+  useEffect(() => {
+    // 🌊 Animación de respiración con physics avanzados
+    Animated.loop(
+      Animated.sequence([
+        Animated.spring(petAnimation, {
+          toValue: 1.15,
+          friction: 3,
+          tension: 40,
+          useNativeDriver: true,
+        }),
+        Animated.spring(petAnimation, {
+          toValue: 1,
+          friction: 3,
+          tension: 40,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+
+    // 🌟 Animación de floating suave
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(floatingAnimation, {
+          toValue: -10,
+          duration: 3000,
+          easing: Easing.inOut(Easing.sin),
+          useNativeDriver: true,
+        }),
+        Animated.timing(floatingAnimation, {
+          toValue: 0,
+          duration: 3000,
+          easing: Easing.inOut(Easing.sin),
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+
+    // ✨ Pulse effect para elementos importantes
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnimation, {
+          toValue: 1.05,
+          duration: 1500,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulseAnimation, {
+          toValue: 1,
+          duration: 1500,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+
+    // 💫 Glow effect animación
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(glowAnimation, {
+          toValue: 1,
+          duration: 2000,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(glowAnimation, {
+          toValue: 0.3,
+          duration: 2000,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  }, []);
+
   useEffect(() => {
     if (gameState && gameState.hearts > 0) {
       startHeartPulse();
     }
   }, [gameState?.hearts]);
 
-  const handleCompleteMission = async (missionId: string) => {
+  const handleCompleteMission = async (missionId: string, index: number) => {
     if (!gameState) return;
+
+    // 🎮 Animar botón de misión
+    if (missionButtonAnims[index]) {
+      animateButtonPress(missionButtonAnims[index]);
+    }
 
     const updatedGameState = GameState.fromJSON(gameState.toJSON());
     updatedGameState.completeMission(missionId);
@@ -260,8 +380,80 @@ export default function HomeScreen() {
     );
   };
 
+  // 🎆 SISTEMA DE PARTÍCULAS
+  const triggerParticleBurst = () => {
+    particleAnimations.forEach((particle, index) => {
+      const angle = (Math.PI * 2 * index) / particleAnimations.length;
+      const distance = 100 + Math.random() * 50;
+      
+      particle.opacity.setValue(1);
+      particle.scale.setValue(0);
+      particle.x.setValue(0);
+      particle.y.setValue(0);
+      
+      Animated.parallel([
+        Animated.timing(particle.x, {
+          toValue: Math.cos(angle) * distance,
+          duration: 1000,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: true,
+        }),
+        Animated.timing(particle.y, {
+          toValue: Math.sin(angle) * distance,
+          duration: 1000,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: true,
+        }),
+        Animated.sequence([
+          Animated.spring(particle.scale, {
+            toValue: 1,
+            friction: 4,
+            useNativeDriver: true,
+          }),
+          Animated.timing(particle.scale, {
+            toValue: 0,
+            duration: 300,
+            useNativeDriver: true,
+          }),
+        ]),
+        Animated.timing(particle.opacity, {
+          toValue: 0,
+          duration: 1300,
+          easing: Easing.out(Easing.ease),
+          useNativeDriver: true,
+        }),
+      ]).start();
+    });
+  };
+
+  // 🎯 ANIMACIONES DE BOTONES INTERACTIVOS
+  const animateButtonPress = (buttonAnim: Animated.Value) => {
+    Animated.sequence([
+      Animated.spring(buttonAnim, {
+        toValue: 0.92,
+        friction: 3,
+        tension: 200,
+        useNativeDriver: true,
+      }),
+      Animated.spring(buttonAnim, {
+        toValue: 1,
+        friction: 3,
+        tension: 200,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  };
+
   const handleFeedPet = async () => {
     if (!gameState) return;
+    
+    // 🎮 Animar botón
+    animateButtonPress(feedButtonAnim);
+    
+    // Haptic feedback
+    if (Platform.OS !== 'web') {
+      Vibration.vibrate(10);
+    }
 
     if (gameState.hearts === 0) {
       Alert.alert(
@@ -294,21 +486,31 @@ export default function HomeScreen() {
   // Pantalla de carga
   if (isLoading) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#4CAF50" />
-        <Text style={styles.loadingText}>Cargando Wellness Quest...</Text>
-      </View>
+      <LinearGradient
+        colors={['#F9FAFB', '#FFFFFF', '#F3F4F6']}
+        style={styles.gradientContainer}
+      >
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#7C3AED" />
+          <Text style={styles.loadingText}>Cargando Wellness Quest...</Text>
+        </View>
+      </LinearGradient>
     );
   }
 
   if (!gameState) {
     return (
-      <View style={styles.errorContainer}>
-        <Text style={styles.errorText}>Error cargando los datos</Text>
-        <TouchableOpacity style={styles.retryButton} onPress={loadGameData}>
-          <Text style={styles.retryButtonText}>Reintentar</Text>
-        </TouchableOpacity>
-      </View>
+      <LinearGradient
+        colors={['#F9FAFB', '#FFFFFF', '#F3F4F6']}
+        style={styles.gradientContainer}
+      >
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>Error cargando los datos</Text>
+          <TouchableOpacity style={styles.retryButton} onPress={loadGameData}>
+            <Text style={styles.retryButtonText}>Reintentar</Text>
+          </TouchableOpacity>
+        </View>
+      </LinearGradient>
     );
   }
 
@@ -322,9 +524,14 @@ export default function HomeScreen() {
   const completionPercentage = gameState.getTodayCompletionPercentage();
 
   return (
+    <LinearGradient
+      colors={['#F9FAFB', '#FFFFFF', '#F3F4F6']}
+      style={styles.gradientContainer}
+    >
     <SafeAreaView style={styles.container}>
-      {/* Header con corazones y MONEDAS ANIMADOS (DÍA 3) */}
-      <View style={styles.header}>
+      {/* 🌌 HEADER GLASSMORPHISM */}
+      <BlurView intensity={95} tint="light" style={styles.headerBlur}>
+        <View style={styles.header}>
         <TouchableOpacity onLongPress={applyDemoData} delayLongPress={2000}>
           <Text style={styles.appTitle}>Wellness Quest</Text>
         </TouchableOpacity>
@@ -335,15 +542,15 @@ export default function HomeScreen() {
             <Animated.Text 
               style={[
                 styles.heartsIcon,
-                gameState.hearts > 0 && { transform: [{ scale: heartPulse }] }
+                gameState.hearts > 0 && { transform: [{ scale: pulseAnimation }] }
               ]}
             >
-              💝
+              🥰
             </Animated.Text>
             <Text style={styles.heartsCount}>{gameState.hearts}</Text>
           </View>
           
-          {/* 🎰 MONEDAS NUEVAS - Con botón secreto para añadir más */}
+          {/* 🍰 MONEDAS NUEVAS - Con botón secreto para añadir más */}
           <TouchableOpacity 
             style={styles.coinsContainer}
             onLongPress={async () => {
@@ -352,7 +559,7 @@ export default function HomeScreen() {
               updatedGameState.coins += 1000;
               setGameState(updatedGameState);
               await StorageService.saveGameState(updatedGameState);
-              Alert.alert('🎰', '¡+1000 monedas añadidas para testing!');
+              Alert.alert('🍰', '¡+1000 monedas añadidas para testing!');
             }}
             delayLongPress={3000}
           >
@@ -361,72 +568,124 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </View>
       </View>
+      </BlurView>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* 🎨 SECCIÓN DE MASCOTA MODERNA (como la imagen) */}
-        <View style={styles.heroSection}>
-          <View style={styles.heroCard}>
-            {/* Header del Hero */}
-            <View style={styles.heroHeader}>
-              <View>
-                <Text style={styles.heroTitle}>Diem</Text>
-                <Text style={styles.heroSubtitle}>Actividades Diarias</Text>
-              </View>
-              <View style={styles.streakBadge}>
-                <Text style={styles.streakText}>{gameState.daysCompleted}</Text>
-                <Text style={styles.streakLabelModern}>días</Text>
-              </View>
+    <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      {/* 🎆 PARTÍCULAS FLOTANTES */}
+      <View style={styles.particlesContainer} pointerEvents="none">
+        {particleAnimations.map((particle, index) => (
+          <Animated.View
+            key={index}
+            style={[
+              styles.particle,
+              {
+                opacity: particle.opacity,
+                transform: [
+                  { translateX: particle.x },
+                  { translateY: particle.y },
+                  { scale: particle.scale }
+                ]
+              }
+            ]}
+          >
+            <Text style={styles.particleEmoji}>
+              {['✨', '💖', '🌟', '✨', '💫'][index % 5]}
+            </Text>
+          </Animated.View>
+        ))}
+      </View>
+
+      {/* 🎨 HERO SECTION CON GLASSMORPHISM */}
+      <Animated.View style={[
+        styles.heroSection,
+        {
+          transform: [
+            { translateY: floatingAnimation },
+            { scale: cardScale }
+          ]
+        }
+      ]}>
+        <LinearGradient
+          colors={['rgba(255,255,255,0.95)', 'rgba(239,239,228,0.85)']}
+          style={styles.heroGradient}
+          start={{x: 0, y: 0}}
+          end={{x: 1, y: 1}}
+        >
+        <BlurView intensity={80} tint="light" style={styles.heroBlur}>
+        <View style={styles.heroCard}>
+          {/* Header del Hero */}
+          <View style={styles.heroHeader}>
+            <View>
+              <Text style={styles.heroTitle}>Diem</Text>
+              <Text style={styles.heroSubtitle}>Actividades Diarias</Text>
             </View>
+            <View style={styles.streakBadge}>
+              <Text style={styles.streakText}>{gameState.daysCompleted}</Text>
+              <Text style={styles.streakLabelModern}>días</Text>
+            </View>
+          </View>
 
-            {/* Mascota en el centro con fondo suave */}
-            <View style={styles.petHeroContainer}>
-              <View style={styles.petBackground}>
-                <Animated.View style={[
-                  styles.petImageContainer,
-                  { transform: [{ scale: petAnimation }] }
-                ]}>
-                  <Image 
-                    source={petDisplay.mood === 'feliz' ? PET_IMAGES.happy : PET_IMAGES.sad}
-                    style={styles.petImage}
-                    resizeMode="contain"
-                  />
-                </Animated.View>
-                
-                {/* Efectos flotantes modernos */}
-                <Animated.View style={[
-                  styles.floatingHearts,
-                  {
-                    opacity: feedingAnim,
-                    transform: [
-                      { translateY: feedingAnim.interpolate({
-                        inputRange: [0, 1],
-                        outputRange: [0, -40]
-                      }) }
-                    ]
-                  }
-                ]}>
-                  <Text style={styles.floatingHeartsText}>💖💫✨</Text>
-                </Animated.View>
-                
-                <Animated.View style={[
-                  styles.missionCompleteEffect,
-                  {
-                    opacity: missionCompleteAnim,
-                    transform: [{ scale: missionCompleteAnim }]
-                  }
-                ]}>
-                  <Text style={styles.missionCompleteText}>¡Increíble! 🎉</Text>
-                </Animated.View>
-              </View>
+          {/* 🌠 MASCOTA CON EFECTOS AVANZADOS */}
+          <View style={styles.petHeroContainer}>
+            <Animated.View style={[
+              styles.petBackground,
+              {
+                shadowOpacity: glowAnimation.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [0.1, 0.3]
+                })
+              }
+            ]}>
+              <Animated.View style={[
+                styles.petImageContainer,
+                { transform: [{ scale: petAnimation }] }
+              ]}>
+                <Image 
+                  source={petDisplay.mood === 'feliz' ? PET_IMAGES.happy : PET_IMAGES.sad}
+                  style={styles.petImage}
+                  resizeMode="contain"
+                />
+              </Animated.View>
               
-              {/* Mensaje de estado moderno */}
-              <Text style={styles.petMessage}>
-                {petDisplay.mood === 'feliz' ? 'estoy esperando contigo...' : 'necesito tu cuidado...'}
-              </Text>
-            </View>
+              {/* Efectos flotantes modernos */}
+              <Animated.View style={[
+                styles.floatingHearts,
+                {
+                  opacity: feedingAnim,
+                  transform: [
+                    { translateY: feedingAnim.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [0, -40]
+                    }) }
+                  ]
+                }
+              ]}>
+                <Text style={styles.floatingHeartsText}>💖💫✨</Text>
+              </Animated.View>
+              
+              <Animated.View style={[
+                styles.missionCompleteEffect,
+                {
+                  opacity: missionCompleteAnim,
+                  transform: [{ scale: missionCompleteAnim }]
+                }
+              ]}>
+                <Text style={styles.missionCompleteText}>¡Increíble! 🎉</Text>
+              </Animated.View>
+            </Animated.View>
+            
+            {/* 💬 MENSAJE CON EFECTO TYPEWRITER */}
+            <Animated.Text style={[
+              styles.petMessage,
+              { opacity: pulseAnimation }
+            ]}>
+              {petDisplay.mood === 'feliz' ? 'estoy esperando contigo...' : 'necesito tu cuidado...'}
+            </Animated.Text>
+          </View>
 
-            {/* Botones de acción modernos */}
-            <View style={styles.heroButtons}>
+          {/* Botones de acción modernos CON ANIMACIONES */}
+          <View style={styles.heroButtons}>
+            <Animated.View style={{ transform: [{ scale: feedButtonAnim }], flex: 1 }}>
               <TouchableOpacity
                 style={[
                   styles.modernButton,
@@ -435,157 +694,242 @@ export default function HomeScreen() {
                 ]}
                 onPress={handleFeedPet}
                 disabled={gameState.hearts === 0}
+                activeOpacity={0.8}
               >
                 <Text style={styles.modernButtonText}>
                   💝 Alimentar
                 </Text>
               </TouchableOpacity>
-
+            </Animated.View>
+            
+            <Animated.View style={{ transform: [{ scale: casinoButtonAnim }], flex: 1 }}>
               <TouchableOpacity
                 style={[styles.modernButton, styles.casinoButtonModern]}
-                onPress={() => router.push('/casino' as any)}
+                onPress={() => {
+                  animateButtonPress(casinoButtonAnim);
+                  setTimeout(() => router.push('/casino' as any), 100);
+                }}
+                activeOpacity={0.8}
               >
                 <Text style={styles.modernButtonText}>
-                  🎰 Casino
+                  � Casino
                 </Text>
               </TouchableOpacity>
+            </Animated.View>
+          </View>
+        </View>
+        </BlurView>
+        </LinearGradient>
+      </Animated.View>
+      {/* Estilos para progreso moderno */}
+      <Animated.View style={[
+        styles.progressModernSection,
+        {
+          transform: [{ scale: pulseAnimation }]
+        }
+      ]}>
+        <Text style={styles.progressModernTitle}>Tu Progreso Hoy</Text>
+        
+        <BlurView intensity={70} tint="light" style={styles.progressBlur}>
+        <LinearGradient
+          colors={['rgba(255,255,255,0.95)', 'rgba(124,58,237,0.08)']}
+          style={styles.progressGradient}
+        >
+        <View style={styles.progressModernCard}>
+          {/* Stats principales */}
+          <View style={styles.progressMainStats}>
+            <View style={styles.progressStatBox}>
+              <Text style={styles.progressStatLabel}>Completadas:</Text>
+              <Text style={styles.progressStatValue}>
+                {gameState.dailyMissions.filter(m => m.isCompleted()).length}/3
+              </Text>
+              <Text style={styles.progressStatPercentage}>{completionPercentage}%</Text>
+            </View>
+          </View>
+          
+          {/* Barra de progreso moderna */}
+          <View style={styles.progressBarModern}>
+            <View style={[
+              styles.progressBarFill, 
+              { width: `${completionPercentage}%` }
+            ]} />
+          </View>
+          
+          {/* Stats inferiores */}
+          <View style={styles.progressBottomStats}>
+            <View style={styles.progressBottomItem}>
+              <Text style={styles.progressBottomNumber}>
+                {gameState.dailyMissions.filter(m => m.isCompleted()).length}
+              </Text>
+              <Text style={styles.progressBottomLabel}>Realizadas</Text>
+            </View>
+            
+            <View style={styles.progressBottomItem}>
+              <Text style={styles.progressBottomNumber}>{gameState.daysCompleted}</Text>
+              <Text style={styles.progressBottomLabel}>Consecutivos días</Text>
             </View>
           </View>
         </View>
+        </LinearGradient>
+        </BlurView>
+      </Animated.View>
 
-        {/* 📊 PROGRESO MODERNO (como la imagen) */}
-        <View style={styles.progressModernSection}>
-          <Text style={styles.progressModernTitle}>Tu Progreso Hoy</Text>
-          
-          <View style={styles.progressModernCard}>
-            {/* Stats principales */}
-            <View style={styles.progressMainStats}>
-              <View style={styles.progressStatBox}>
-                <Text style={styles.progressStatLabel}>Completadas:</Text>
-                <Text style={styles.progressStatValue}>
-                  {gameState.dailyMissions.filter(m => m.isCompleted()).length}/3
-                </Text>
-                <Text style={styles.progressStatPercentage}>{completionPercentage}%</Text>
-              </View>
+      {/* Misiones Diarias */}
+      <View style={styles.missionsSection}>
+        <Text style={styles.sectionTitle}>Misiones de Hoy (3)</Text>
+        
+        {gameState.dailyMissions.map((mission, index) => (
+          <View key={mission.id} style={styles.missionCard}>
+            <View style={styles.missionHeader}>
+              <Text style={styles.missionTitle}>{mission.title}</Text>
+              <Text style={styles.missionDuration}>{mission.getDurationText()}</Text>
             </View>
             
-            {/* Barra de progreso moderna */}
-            <View style={styles.progressBarModern}>
-              <View style={[
-                styles.progressBarFill, 
-                { width: `${completionPercentage}%` }
-              ]} />
-            </View>
+            <Text style={styles.missionDescription}>{mission.description}</Text>
             
-            {/* Stats inferiores */}
-            <View style={styles.progressBottomStats}>
-              <View style={styles.progressBottomItem}>
-                <Text style={styles.progressBottomNumber}>
-                  {gameState.dailyMissions.filter(m => m.isCompleted()).length}
+            <View style={styles.missionFooter}>
+              <View style={styles.missionMeta}>
+                <Text style={styles.missionCategory}>
+                  {mission.category === 'energia' ? '⚡' : 
+                   mission.category === 'estres' ? '🧘' : '🏃'} 
+                  {mission.category}
                 </Text>
-                <Text style={styles.progressBottomLabel}>Realizadas</Text>
+                <Text style={styles.missionIntensity}>
+                  • {mission.intensity}
+                </Text>
               </View>
-              
-              <View style={styles.progressBottomItem}>
-                <Text style={styles.progressBottomNumber}>{gameState.daysCompleted}</Text>
-                <Text style={styles.progressBottomLabel}>Consecutivos días</Text>
-              </View>
-            </View>
-          </View>
-        </View>
 
-        {/* Misiones Diarias */}
-        <View style={styles.missionsSection}>
-          <Text style={styles.sectionTitle}>Misiones de Hoy (3)</Text>
-          
-          {gameState.dailyMissions.map((mission) => (
-            <View key={mission.id} style={styles.missionCard}>
-              <View style={styles.missionHeader}>
-                <Text style={styles.missionTitle}>{mission.title}</Text>
-                <Text style={styles.missionDuration}>{mission.getDurationText()}</Text>
-              </View>
-              
-              <Text style={styles.missionDescription}>{mission.description}</Text>
-              
-              <View style={styles.missionFooter}>
-                <View style={styles.missionMeta}>
-                  <Text style={styles.missionCategory}>
-                    {mission.category === 'energia' ? '⚡' : 
-                     mission.category === 'estres' ? '🧘' : '🏃'} 
-                    {mission.category}
-                  </Text>
-                  <Text style={styles.missionIntensity}>
-                    • {mission.intensity}
-                  </Text>
+              {mission.isCompleted() ? (
+                <View style={styles.completedBadge}>
+                  <Text style={styles.completedText}>✅ Completada</Text>
                 </View>
-
-                {mission.isCompleted() ? (
-                  <View style={styles.completedBadge}>
-                    <Text style={styles.completedText}>✅ Completada</Text>
-                  </View>
-                ) : (
+              ) : (
+                <Animated.View style={{ transform: [{ scale: missionButtonAnims[index] || new Animated.Value(1) }] }}>
                   <TouchableOpacity
                     style={styles.completeButton}
-                    onPress={() => handleCompleteMission(mission.id)}
+                    onPress={() => handleCompleteMission(mission.id, index)}
+                    activeOpacity={0.8}
                   >
                     <Text style={styles.completeButtonText}>Completar</Text>
                   </TouchableOpacity>
-                )}
-              </View>
+                </Animated.View>
+              )}
             </View>
-          ))}
-        </View>
+          </View>
+        ))}
+      </View>
 
-        {/* Mensaje motivacional */}
-        <View style={styles.motivationSection}>
-          <Text style={styles.motivationText}>
-            {completionPercentage === 100 
-              ? "¡Increíble! Has completado todas las misiones de hoy 🎉"
-              : completionPercentage > 0
-              ? "¡Buen trabajo! Sigue así 💪"
-              : "¡Comienza tu día con una pequeña misión! 🌱"
-            }
-          </Text>
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+      {/* Mensaje motivacional */}
+      <View style={styles.motivationSection}>
+        <Text style={styles.motivationText}>
+          {completionPercentage === 100 
+            ? "¡Increíble! Has completado todas las misiones de hoy 🎉"
+            : completionPercentage > 0
+            ? "¡Buen trabajo! Sigue así 💪"
+            : "¡Comienza tu día con una pequeña misión! 🌱"
+          }
+        </Text>
+      </View>
+    </ScrollView>
+  </SafeAreaView>
+  </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
+  // 🎆 CONTENEDORES PRINCIPALES
+  gradientContainer: {
+    flex: 1,
+  },
   container: {
     flex: 1,
-    backgroundColor: '#F5F9F6',
+    backgroundColor: 'transparent',
+  },
+  headerBlur: {
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+    overflow: 'hidden',
+  },
+  heroGradient: {
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  heroBlur: {
+    flex: 1,
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  progressBlur: {
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  progressGradient: {
+    flex: 1,
+  },
+  
+  // 🎆 PARTÍCULAS
+  particlesContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 1000,
+  },
+  particle: {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+  },
+  particleEmoji: {
+    fontSize: 24,
+  },
+  
+  // Estilos para glassmorphism que se removieron
+  glassmorphismContainer: {
+    marginVertical: 10,
+  },
+  glassmorphismBlur: {
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  glassmorphismCard: {
+    padding: 20,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F5F9F6',
+    backgroundColor: '#F3F4F6',
   },
   loadingText: {
     marginTop: 10,
     fontSize: 16,
-    color: '#4CAF50',
+    color: '#7C3AED',
   },
   errorContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F5F9F6',
+    backgroundColor: '#F3F4F6',
     padding: 20,
   },
   errorText: {
     fontSize: 16,
-    color: '#666',
+    color: '#6B7280',
     marginBottom: 20,
     textAlign: 'center',
   },
   retryButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#7C3AED',
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 20,
+    shadowColor: '#7C3AED',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
   },
   retryButtonText: {
     color: '#FFFFFF',
@@ -595,20 +939,22 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 20,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
     backgroundColor: '#FFFFFF',
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 3,
+    shadowColor: '#7C3AED',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 5,
   },
   appTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#4CAF50',
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#7C3AED',
+    letterSpacing: -0.5,
   },
   currencyContainer: {
     flexDirection: 'row',
@@ -618,31 +964,43 @@ const styles = StyleSheet.create({
   heartsContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFE0E6',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    backgroundColor: '#FDF2F8',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
     borderRadius: 20,
+    borderWidth: 2,
+    borderColor: '#EC4899',
+    shadowColor: '#EC4899',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
   },
   // 🎰 ESTILOS PARA MONEDAS
   coinsContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFF3CD',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    backgroundColor: '#FFFBEB',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
     borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#fd9924',
+    borderWidth: 2,
+    borderColor: '#F59E0B',
+    shadowColor: '#F59E0B',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
   },
   coinsIcon: {
     fontSize: 18,
     marginRight: 4,
-    color: '#fd9924',
+    color: '#F59E0B',
   },
   coinsCount: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#fd9924',
+    fontWeight: '800',
+    color: '#F59E0B',
   },
   heartsIcon: {
     fontSize: 18,
@@ -650,18 +1008,20 @@ const styles = StyleSheet.create({
   },
   heartsCount: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#E91E63',
+    fontWeight: '800',
+    color: '#EC4899',
   },
   content: {
     flex: 1,
-    padding: 20,
+    paddingHorizontal: 20,
+    paddingTop: 16,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#2E7D32',
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#1F2937',
     marginBottom: 16,
+    letterSpacing: -0.5,
   },
   petSection: {
     marginBottom: 24,
@@ -856,39 +1216,47 @@ const styles = StyleSheet.create({
   },
   missionsSection: {
     marginBottom: 24,
+    width: '100%',
   },
   missionCard: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    borderLeftWidth: 4,
-    borderLeftColor: '#4CAF50',
+    borderRadius: 16,
+    padding: 18,
+    marginBottom: 14,
+    borderLeftWidth: 5,
+    borderLeftColor: '#7C3AED',
+    shadowColor: '#7C3AED',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 4,
   },
   missionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 10,
   },
   missionTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#333',
+    fontSize: 17,
+    fontWeight: '700',
+    color: '#1F2937',
     flex: 1,
   },
   missionDuration: {
     fontSize: 12,
-    color: '#666',
-    backgroundColor: '#F0F0F0',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
+    color: '#7C3AED',
+    backgroundColor: '#F3E8FF',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 12,
+    fontWeight: '600',
   },
   missionDescription: {
     fontSize: 14,
-    color: '#666',
+    color: '#6B7280',
     marginBottom: 12,
+    lineHeight: 20,
   },
   missionFooter: {
     flexDirection: 'row',
@@ -910,41 +1278,54 @@ const styles = StyleSheet.create({
     marginLeft: 4,
   },
   completeButton: {
-    backgroundColor: '#4CAF50',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    backgroundColor: '#10B981',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
     borderRadius: 16,
+    shadowColor: '#10B981',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 4,
   },
   completeButtonText: {
     color: '#FFFFFF',
-    fontSize: 12,
-    fontWeight: 'bold',
+    fontWeight: '700',
+    fontSize: 13,
   },
   completedBadge: {
-    backgroundColor: '#E8F5E8',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
+    backgroundColor: '#D1FAE5',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 16,
+    borderWidth: 2,
+    borderColor: '#10B981',
   },
   completedText: {
-    color: '#4CAF50',
-    fontSize: 12,
-    fontWeight: 'bold',
+    color: '#10B981',
+    fontWeight: '700',
+    fontSize: 13,
   },
   motivationSection: {
-    backgroundColor: '#E3F2FD',
-    borderRadius: 12,
-    padding: 16,
+    backgroundColor: '#F3E8FF',
+    borderRadius: 16,
+    padding: 20,
     marginBottom: 20,
+    marginHorizontal: 4,
+    borderWidth: 2,
+    borderColor: '#E9D5FF',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   motivationText: {
-    fontSize: 14,
-    color: '#1976D2',
+    fontSize: 15,
+    color: '#7C3AED',
     textAlign: 'center',
-    fontStyle: 'italic',
+    fontWeight: '600',
+    lineHeight: 22,
   },
 
-  // 🎨 ESTILOS MODERNOS PARA EL NUEVO DISEÑO
+  // ESTILOS MODERNOS PARA EL NUEVO DISEÑO
   heroSection: {
     marginBottom: 24,
   },
@@ -952,60 +1333,79 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 20,
     padding: 24,
-    marginHorizontal: 16,
+    marginBottom: 20,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.15,
     shadowRadius: 12,
     elevation: 8,
+    alignItems: 'center',
   },
   heroHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 20,
+    alignItems: 'center',
+    marginBottom: 24,
+    width: '100%',
   },
   heroTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#23314b',
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#1F2937',
+    letterSpacing: -0.5,
   },
   heroSubtitle: {
     fontSize: 14,
-    color: '#474950',
+    color: '#6B7280',
     marginTop: 2,
+    fontWeight: '500',
   },
   streakBadge: {
-    backgroundColor: '#fd9924',
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    backgroundColor: '#F59E0B',
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
     alignItems: 'center',
+    shadowColor: '#F59E0B',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 4,
   },
   streakText: {
-    fontSize: 18,
-    fontWeight: 'bold',
+    fontSize: 20,
+    fontWeight: '800',
     color: '#FFFFFF',
   },
   streakLabelModern: {
-    fontSize: 10,
+    fontSize: 11,
     color: '#FFFFFF',
     marginTop: 2,
+    fontWeight: '600',
   },
   petHeroContainer: {
     alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: 20,
+    width: '100%',
   },
   petBackground: {
-    width: 160,
-    height: 120,
-    borderRadius: 20,
-    backgroundColor: '#efefe4',
+    width: 170,
+    height: 130,
+    borderRadius: 24,
+    backgroundColor: '#F3E8FF',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 14,
     position: 'relative',
     overflow: 'hidden',
+    borderWidth: 3,
+    borderColor: '#E9D5FF',
+    shadowColor: '#7C3AED',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 5,
   },
   petImageContainer: {
     width: '100%',
@@ -1014,55 +1414,66 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   petImage: {
-    width: 140,
-    height: 100,
+    width: 150,
+    height: 110,
   },
   petMessage: {
     fontSize: 16,
-    color: '#474950',
-    fontStyle: 'italic',
+    color: '#7C3AED',
+    fontWeight: '600',
     textAlign: 'center',
+    lineHeight: 22,
   },
   heroButtons: {
     flexDirection: 'row',
     gap: 12,
+    width: '100%',
+    justifyContent: 'center',
   },
   modernButton: {
     flex: 1,
-    paddingVertical: 14,
+    paddingVertical: 16,
     paddingHorizontal: 24,
-    borderRadius: 25,
+    borderRadius: 16,
     alignItems: 'center',
+    justifyContent: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
   },
   feedButtonModern: {
-    backgroundColor: '#5fb294',
+    backgroundColor: '#10B981',
+    shadowColor: '#10B981',
   },
   casinoButtonModern: {
-    backgroundColor: '#fd9924',
+    backgroundColor: '#7C3AED',
+    shadowColor: '#7C3AED',
   },
   modernButtonDisabled: {
-    backgroundColor: '#CCCCCC',
+    backgroundColor: '#D1D5DB',
+    shadowOpacity: 0.1,
   },
   modernButtonText: {
     color: '#FFFFFF',
-    fontWeight: 'bold',
-    fontSize: 14,
+    fontWeight: '800',
+    fontSize: 15,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
 
-  // 📊 ESTILOS PARA PROGRESO MODERNO
+  // ESTILOS PARA PROGRESO MODERNO
   progressModernSection: {
     marginBottom: 24,
+    width: '100%',
   },
   progressModernTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#23314b',
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#1F2937',
     marginBottom: 12,
+    letterSpacing: -0.5,
   },
   progressModernCard: {
     backgroundColor: '#FFFFFF',
@@ -1073,6 +1484,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
+    alignItems: 'center',
   },
   progressMainStats: {
     marginBottom: 16,
@@ -1082,31 +1494,36 @@ const styles = StyleSheet.create({
   },
   progressStatLabel: {
     fontSize: 14,
-    color: '#474950',
+    color: '#6B7280',
     marginBottom: 4,
+    fontWeight: '500',
   },
   progressStatValue: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#23314b',
+    fontSize: 26,
+    fontWeight: '800',
+    color: '#1F2937',
     marginBottom: 2,
   },
   progressStatPercentage: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#5fb294',
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#10B981',
   },
   progressBarModern: {
-    height: 8,
-    backgroundColor: '#efefe4',
-    borderRadius: 4,
+    height: 10,
+    backgroundColor: '#E5E7EB',
+    borderRadius: 10,
     overflow: 'hidden',
     marginBottom: 16,
   },
   progressBarFill: {
     height: '100%',
-    backgroundColor: '#5fb294',
-    borderRadius: 4,
+    backgroundColor: '#10B981',
+    borderRadius: 10,
+    shadowColor: '#10B981',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.4,
+    shadowRadius: 4,
   },
   progressBottomStats: {
     flexDirection: 'row',
@@ -1116,14 +1533,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   progressBottomNumber: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#23314b',
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#7C3AED',
   },
   progressBottomLabel: {
     fontSize: 12,
-    color: '#474950',
+    color: '#6B7280',
     marginTop: 4,
+    fontWeight: '500',
   },
 
 });
