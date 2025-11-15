@@ -64,8 +64,8 @@ export class DemoData {
         duration: 3,
         category: 'estres',
         intensity: 'suave',
-        completed: false,
-        completedAt: null,
+        completed: true, // Completada para mostrar progreso
+        completedAt: new Date(Date.now() - 60 * 60 * 1000), // Completada hace 1 hora
         createdAt: new Date()
       }),
       
@@ -76,7 +76,7 @@ export class DemoData {
         duration: 10,
         category: 'movimiento',
         intensity: 'normal',
-        completed: true, // Una misión completada para mostrar progreso
+        completed: true, // Segunda misión completada (2/3)
         completedAt: new Date(Date.now() - 30 * 60 * 1000), // Completada hace 30 min
         createdAt: new Date()
       }),
@@ -88,7 +88,7 @@ export class DemoData {
         duration: 5,
         category: 'estres', 
         intensity: 'suave',
-        completed: false,
+        completed: false, // Una pendiente para mantener motivación
         completedAt: null,
         createdAt: new Date()
       })

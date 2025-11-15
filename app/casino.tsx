@@ -211,7 +211,7 @@ export default function CasinoScreen() {
 
       // Actualizar estado del juego
       const updatedGameState = GameState.fromJSON(gameState.toJSON());
-      updatedGameState.coins -= result.coinsSpent || 0;
+      updatedGameState.coins = updatedGameState.coins - CasinoService.SPIN_COST;
       
       // Actualizar inventario
       const updatedInventory = [...inventory];
@@ -230,6 +230,7 @@ export default function CasinoScreen() {
       await StorageService.saveGameState(updatedGameState);
       await StorageService.saveInventory(updatedInventory);
       
+      console.log('💰 Casino: Monedas gastadas:', CasinoService.SPIN_COST);
       console.log('💰 Casino: Estado guardado - Monedas restantes:', updatedGameState.coins);
       console.log('🎁 Decoración desbloqueada:', result.prize?.name);
 
@@ -572,17 +573,20 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   title: {
-    fontSize: 22,
+    fontSize: 16,
     fontWeight: '800',
     color: '#F59E0B',
     letterSpacing: -0.5,
+    flex: 1,
+    textAlign: 'center',
+    marginHorizontal: 8,
   },
   coinsDisplay: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FFFBEB',
-    paddingHorizontal: 14,
-    paddingVertical: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
     borderRadius: 20,
     borderWidth: 2,
     borderColor: '#F59E0B',
@@ -593,11 +597,11 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   coinsIcon: {
-    fontSize: 18,
-    marginRight: 4,
+    fontSize: 16,
+    marginRight: 3,
   },
   coinsCount: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '800',
     color: '#F59E0B',
   },

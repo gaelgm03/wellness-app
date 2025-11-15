@@ -132,12 +132,6 @@ export default function HomeScreen() {
       // Cargar estado del juego
       const savedGameState = await StorageService.loadGameState();
       
-      // 🎰 HACK TEMPORAL: Dar monedas para testing casino
-      if (savedGameState.coins < 100) {
-        savedGameState.coins = 500; // Asegurar que siempre tengas monedas para probar
-        console.log('🪙 Monedas de testing aplicadas:', savedGameState.coins);
-      }
-      
       // NUEVO DÍA 2: Verificar si es nuevo día y actualizar misiones
       savedGameState.checkAndResetDailyMissions();
       
@@ -536,6 +530,7 @@ export default function HomeScreen() {
               setGameState(updatedGameState);
               await StorageService.saveGameState(updatedGameState);
               console.log('🪙 Monedas de testing aplicadas:', updatedGameState.coins);
+              console.log('🪙 Monedas de testing aplicadas:', updatedGameState.coins);
               Alert.alert('🍰', '¡+1000 monedas añadidas para testing!');
             }}
             delayLongPress={3000}
@@ -687,7 +682,7 @@ export default function HomeScreen() {
                 activeOpacity={0.8}
               >
                 <Text style={styles.modernButtonText}>
-                  � Casino
+                  🎰 Casino
                 </Text>
               </TouchableOpacity>
             </Animated.View>
@@ -1440,12 +1435,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
     padding: 20,
+    width: '100%',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
-    alignItems: 'center',
   },
   progressMainStats: {
     marginBottom: 16,
@@ -1498,7 +1493,8 @@ const styles = StyleSheet.create({
   },
   progressBottomStats: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'space-around',
+    width: '100%',
   },
   progressBottomItem: {
     alignItems: 'center',
