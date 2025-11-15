@@ -1,49 +1,68 @@
 # Wellness Quest 🧭💚  
-Aplicación móvil gamificada de bienestar para el hackathon (3 días)
+**Aplicación móvil gamificada de bienestar | Hackathon iOSLab 2025**
 
-Wellness Quest es una app móvil que impulsa hábitos saludables mediante **micro-misiones diarias** y una **mascota emocional** que refleja el progreso del usuario.  
-Este README está diseñado como **guía clara, ejecutable y enfocada 100% en el MVP** para que todo el equipo pueda avanzar rápido y en forma alineada.
+[![React Native](https://img.shields.io/badge/React%20Native-0.81.5-61DAFB?logo=react)](https://reactnative.dev/)
+[![Expo](https://img.shields.io/badge/Expo-~54.0.23-000020?logo=expo)](https://expo.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9.2-3178C6?logo=typescript)](https://www.typescriptlang.org/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
+> **Wellness Quest** transforma hábitos saludables en una experiencia gamificada mediante **micro-misiones diarias personalizadas** y **Diem**, una mascota emocional que refleja tu progreso.
+
+### ✨ Demo Rápida
+
+**Flujo completo:**  
+Onboarding personalizado (4 preguntas) → Misiones diarias (2-15 min) → Sistema de recompensas → Cuidado de mascota → Casino y coleccionables
+
+**Características destacadas:**
+- 🎯 Generación inteligente de misiones basada en preferencias del usuario
+- 💖 Sistema de economía dual (corazones acumulables + monedas)
+- 🐾 Mascota emocional "Diem" con 4 estados visuales progresivos
+- 🎰 Casino con ruleta animada y sistema de coleccionables por rareza
+- 📊 Seguimiento de progreso con rachas diarias
+- 💾 Persistencia completa con AsyncStorage
 
 ---
 
 ## 🎯 Objetivo del Proyecto
 
-- **Meta principal:** Entregar un **MVP estable, pulido y demo-ready** en 3 días de hackathon.  
-- **Enfoque:**  
-  - Simplicidad en la implementación.  
-  - Claridad en la experiencia de usuario.  
-  - Impacto visual y emocional (mascota + misiones).  
-- **Criterio de éxito:**  
-  - Onboarding completo.  
-  - Misiones diarias funcionando.  
-  - Mascota con estados emocionales.  
-  - Progreso visible.  
-  - Notificación diaria operando (o simulada para demo).  
+**Wellness Quest** busca resolver un problema común: mantener hábitos saludables de forma sostenible.
+
+**Problema:**
+- Las apps de bienestar tradicionales son complejas o abrumadoras
+- La motivación decae con el tiempo
+- Falta personalización real basada en necesidades individuales
+
+**Solución:**
+- Misiones diarias cortas (2-15 min) adaptadas a disponibilidad y objetivos
+- Mascota emocional que crea accountability positivo
+- Sistema de recompensas dual sin presión  
 
 ---
 
-## 🧩 Alcance del MVP (lo que SÍ vamos a construir)
-
-> Esta sección define exactamente el MVP. No se implementará nada fuera de esta lista.
+## ✨ Características Principales
 
 1. **Onboarding (4 preguntas)**  
    - Objetivo de bienestar: `energía`, `estrés`, `movimiento`.  
    - Disponibilidad diaria: `baja` / `media` / `alta`.  
    - Intensidad preferida: `suave` / `normal` / `activa`.  
-   - Estilo de misión.  
+   - Estilo de misión: `reflexiva` / `activa` / `social` / `personal`.
 
 2. **Misiones diarias automáticas**  
-   - Generar **3 misiones pequeñas por día** (2–10 min).  
+   - Generar **3 misiones pequeñas por día** (2–15 min).  
    - Estados de misión: `pendiente` / `completada`.  
 
 3. **Economía doble** ⭐  
    - Completar misión = `+1` corazón + `+10` monedas.  
-   - Alimentar mascota = `–1` corazón.  
+   - Cuidar mascota = `–1` corazón (máximo 3 cuidados por día).  
+   - Corazones acumulables entre días.  
    - Sistema de monedas para casino y decoraciones.  
 
-4. **Mascota emocional**  
-   - 2 estados: `feliz` y `triste`.  
-   - Cambia de estado al alimentar o no alimentar.  
+4. **Mascota emocional "Diem"** 🐾  
+   - 4 estados visuales progresivos: `triste` → `neutral` → `feliz` → `máximo`.  
+   - Estado se actualiza solo al presionar el botón "Cuidar".  
+   - Límite diario de 3 cuidados fomenta hábito constante sin grinding.  
+   - Botón de cuidado se desactiva automáticamente al alcanzar el máximo.  
+   - Reset diario del estado visual.  
 
 5. **Progreso básico**  
    - Días completados.  
@@ -82,6 +101,42 @@ Este README está diseñado como **guía clara, ejecutable y enfocada 100% en el
 
 ---
 
+## 🎮 Características implementadas
+
+### Sistema de mascota emocional
+- **4 estados visuales progresivos** con imágenes únicas
+- **Sistema de cuidado inteligente**: solo se actualiza al presionar botón "Cuidar"
+- **Límite diario de 3 cuidados** para fomentar hábito sin grinding
+- **Mensajes contextuales** específicos para cada estado
+- **Indicador visual de progreso** (3 corazones) con estados lleno/vacío
+- **Animaciones fluidas** de transición y feedback
+
+### Generación de misiones
+- **Motor de personalización** basado en 4 parámetros del onboarding
+- **3 misiones diarias únicas** adaptadas a disponibilidad y objetivo
+- **Categorías**: Energía, Estrés, Movimiento
+- **Intensidades**: Suave, Normal, Activa
+- **Duraciones ajustadas** según disponibilidad del usuario (2-30 min)
+
+### Sistema de economía
+- **Corazones**: Recurso acumulable, se gana completando misiones (+1 por misión)
+- **Monedas**: Moneda del casino, se gana completando misiones (+10 por misión)
+- **Límite de cuidados diarios**: Máximo 3 mejoras de estado por día
+- **Persistencia completa**: Estado se guarda automáticamente
+
+### Casino y coleccionables
+- **Ruleta animada** con efectos visuales según rareza
+- **4 niveles de rareza**: Común, Rara, Épica, Legendaria
+- **Sistema de inventario** con decoraciones desbloqueables
+- **Mecánica de equipar/desequipar** items
+- **Estadísticas de colección** (completado, legendarias obtenidas)
+
+### Progreso y estadísticas
+- **Días consecutivos** (streak) con contador
+- **Porcentaje de completado diario** con barra de progreso animada
+- **Total de misiones completadas**
+- **Reset diario automático** de misiones y estado de mascota
+
 ## 🚀 Cómo correr el proyecto
 
 ### Prerequisitos
@@ -93,8 +148,8 @@ Este README está diseñado como **guía clara, ejecutable y enfocada 100% en el
 
 ```bash
 # 1. Clonar el repositorio
-git clone <repo-url>
-cd hackathon-ioslab
+git clone https://github.com/gaelgm03/wellness-app.git
+cd wellness-app
 
 # 2. Instalar dependencias
 npm install
@@ -119,12 +174,12 @@ npx expo start --tunnel
 - Usa esta opción si tienes problemas de conectividad
 - Más lento pero más confiable en redes complejas
 
-**Opción 3: Web (backup para demo)**
+**Opción 3: Web**
 ```bash
 npm run web
 ```
 - Abre automáticamente en el navegador
-- Útil si Expo Go falla durante la presentación
+- Útil para pruebas rápidas sin dispositivo móvil
 
 ### Solución de problemas comunes
 
@@ -139,9 +194,8 @@ npm run web
 - Verifica que el firewall no bloquee Expo (puerto 8081)
 
 **❌ Warnings de dependencias/vulnerabilidades**
-- Son normales para un proyecto de hackathon
-- No afectan la funcionalidad del MVP
-- Puedes ignorarlos para la demo
+- Son normales en proyectos Expo
+- No afectan la funcionalidad
 
 ### Limpiar datos de la app
 
@@ -169,7 +223,7 @@ await StorageService.clearAllData();
 app/
   ├── (tabs)/          # Tabs principales (Home, Explore, Profile)
   ├── onboarding.tsx   # Pantalla de onboarding
-  ├── casino.tsx       # Pantalla del casino 🎰
+  ├── casino.tsx       # Pantalla del casino 
   └── _layout.tsx      # Layout raíz
 
 src/
@@ -217,12 +271,14 @@ assets/
   - Navegación a Home al finalizar.  
 
 - **Home**  
-  - Sección de **mascota emocional** (estado feliz/triste).  
-  - Lista de **3 misiones diarias** con estado.  
-  - Visualización de **corazones** actuales.  
-  - Acción para **alimentar mascota** (consume 1 corazón).  
+  - **Mascota emocional "Diem"** con 4 estados visuales progresivos.  
+  - **Indicador de estado** con 3 corazones (vacíos/llenos).  
+  - Lista de **3 misiones diarias** personalizadas según onboarding.  
+  - **Botón " Cuidar"** para mejorar estado de mascota (máx. 3 veces/día).  
+  - **Sección de progreso** con estadísticas del día y racha.  
+  - Visualización de **corazones** (acumulables) y **monedas** para casino.  
 
-- **Casino** 🎰 ⭐  
+- **Casino**  
   - Ruleta animada para gastar monedas.  
   - Sistema de premios con decoraciones.  
   - Inventario de items coleccionables.  
@@ -236,102 +292,7 @@ assets/
 
 ---
 
-## 👥 Equipo y Responsabilidades
-
-### Roles
-
-- **Dev A — UI/Frontend**  
-  - Pantallas en React Native.  
-  - `Onboarding`, `Home`, `Casino`, `Progreso`.  
-  - Estados visuales de la mascota (feliz/triste).  
-  - Animaciones con Animated API.
-
-- **Dev B — Lógica/Datos**  
-  - Generación de misiones (MissionGenerator).  
-  - Persistencia (AsyncStorage).  
-  - Economía (corazones + monedas).  
-  - Lógica del casino y ruleta.  
-  - Notificación diaria.  
-  - Servicios y modelos de datos.  
-
-### Reparto sugerido por área
-
-| Área                  | Responsable principal | Notas                                  |
-|-----------------------|-----------------------|----------------------------------------|
-| Onboarding UI         | Dev A                 | React component con hooks              |
-| Home UI               | Dev A                 | Mascota + misiones + corazones + monedas |
-| Casino UI             | Dev A                 | Ruleta animada + inventario            |
-| Progreso UI           | Dev A                 | Estadísticas y barras de progreso      |
-| Generador de misiones | Dev B                 | MissionGenerator service               |
-| Persistencia          | Dev B                 | AsyncStorage (StorageService)          |
-| Economía              | Dev B                 | Sistema doble: corazones + monedas     |
-| Casino Service        | Dev B                 | Lógica de ruleta y premios             |
-| Notificación diaria   | Dev B                 | Expo Notifications (simplificado)      |
-
----
-
-## 📅 Plan de 3 días (alto nivel)
-
-### Día 1 — Fundaciones
-
-- **UI base: Onboarding + Home**  
-  - Flujo completo de pantallas (aunque con datos mock).  
-
-- **Persistencia inicial (AsyncStorage)**  
-  - Guardar resultado de onboarding con StorageService.  
-
-- **Modelo de mascota**  
-  - Definir estados `feliz` / `triste`.  
-  - Definir relación con corazones y alimentación.  
-
-- **Mock de misiones**  
-  - Misiones generadas hardcodeadas según preferencias del onboarding.  
-
-### Día 2 — Lógica + Integraciones
-
-- **Generador de misiones**  
-  - Reemplazar mocks con generación automática simple basada en:  
-    - Objetivo de bienestar.  
-    - Disponibilidad diaria.  
-    - Intensidad.  
-    - Estilo de misión.  
-
-- **Economía**  
-  - Completar misión = `+1` corazón + `+10` monedas.  
-  - Alimentar mascota = `–1` corazón.  
-
-- **Alimentar mascota**  
-  - Acción en Home que consume corazón y cambia estado.  
-
-- **Notificación diaria**  
-  - Un recordatorio motivacional al día (configuración simple).  
-
-- **Progreso básico**  
-  - Días completados.  
-  - Porcentaje de misiones completadas hoy.  
-
-### Día 3 — Pulido + Demo
-
-- **Animaciones simples**  
-  - Animaciones de la mascota (cambio de estado, pequeños movimientos).  
-
-- **UX limpia**  
-  - Ajuste de colores, tipografías, spacing.  
-  - Textos claros y motivacionales.  
-
-- **Datos para demo**  
-  - Estado preconfigurado que permita mostrar:  
-    - Misiones pre-generadas.  
-    - Un día parcialmente completado.  
-    - Ejemplo de mascota triste y feliz.  
-
-- **QA**  
-  - Flujo completo: instalación → onboarding → home → completar misión → alimentar mascota → revisar progreso.  
-  - Pruebas rápidas en 1–2 dispositivos.  
-
----
-
-## 🔁 Flujos principales del MVP
+## 🔁 Flujos principales
 
 ### Flujo 1: Primer uso
 
@@ -349,11 +310,15 @@ assets/
 4. Se suma `+1` corazón y `+10` monedas.  
 5. Se actualiza el **progreso del día**.  
 
-### Flujo 3: Alimentar a la mascota
+### Flujo 3: Cuidar a la mascota
 
-1. Usuario presiona acción “Alimentar mascota”.  
-2. Se descuenta `–1` corazón (si hay al menos 1).  
-3. La mascota pasa a estado **feliz**.  
+1. Usuario presiona botón " Cuidar".  
+2. Se valida que tenga corazones disponibles y no haya alcanzado el límite diario (3).  
+3. Se descuenta `–1` corazón.  
+4. La mascota avanza 1 estado (triste → neutral → feliz → máximo).  
+5. El indicador visual se actualiza (corazones llenos).  
+6. El mensaje debajo de la mascota cambia según el nuevo estado.  
+7. Si alcanza 3 cuidados, el botón se desactiva hasta el día siguiente.  
 
 ### Flujo 4: Progreso
 
@@ -368,165 +333,65 @@ assets/
 
 ---
 
-## 🧪 Alcance técnico mínimo por módulo
+## 📊 Métricas del Proyecto
 
-- **Onboarding**  
-  - React component con estado de preguntas.  
-  - Persistencia de las respuestas con StorageService.  
-
-- **Misiones diarias**  
-  - Modelo de misión (id, título, duración, estado).  
-  - Lógica simple para 3 misiones/día.  
-
-- **Economía**  
-  - Variable persistida de cantidad de corazones y monedas.  
-  - Actualización al completar misión y alimentar mascota.  
-
-- **Mascota**  
-  - Estado emocional derivado de acciones recientes (alimentación y/o misiones).  
-
-- **Progreso**  
-  - Registro de día actual y contador de misiones completadas.  
-
-- **Notificación**  
-  - Programación diaria básica (aunque sea mock con disparo manual para demo).  
+- **Contexto:** Proyecto desarrollado durante hackathon iOSLab 2025 (3 días)
+- **Líneas de código:** ~2,800+ (TypeScript + JavaScript)
+- **Componentes:** 8 pantallas/modales
+- **Modelos de datos:** 5 clases principales (`GameState`, `Pet`, `Mission`, `UserPreferences`, `Decoration`)
+- **Servicios:** 4 servicios (`StorageService`, `MissionGenerator`, `CasinoService`, `NotificationService`)
+- **Animaciones:** 15+ animaciones fluidas con React Native Animated API
+- **Assets:** 4 estados de mascota (PNG) + iconos + efectos
 
 ---
 
-## 🎬 Guion de demo (1 minuto por Windsurf)
+## 🤝 Contribuciones
 
-> Esta sección sirve como script para la presentación final.
+Las contribuciones son bienvenidas para expandir el proyecto:
 
-1. **Onboarding**  
-   - Mostrar cómo el usuario responde a las 4 preguntas:  
-     - Objetivo (energía/estrés/movimiento).  
-     - Disponibilidad diaria.  
-     - Intensidad preferida.  
-     - Estilo de misión.  
-   - Explicar en una frase que esto personaliza las misiones.  
+- 🔔 Implementar sistema completo de notificaciones push
+- 🎨 Integración visual de decoraciones sobre la imagen de Diem
+- 📱 Conectar con APIs de salud (Apple Health, Google Fit)
+- 🌍 Sistema de comunidad y logros compartidos
+- 🧪 Tests unitarios y de integración
+- ♿ Mejoras de accesibilidad (WCAG compliance)
 
-2. **Misiones generadas**  
-   - Pasar a la pantalla Home.  
-   - Mostrar las **3 misiones diarias** generadas automáticamente.  
-   - Resaltar que son misiones cortas (2–10 min).  
-
-3. **Completar misión**  
-   - Marcar una misión como completada.  
-   - Explicar: “Cada misión completada suma un corazón”.  
-
-4. **Alimentar mascota**  
-   - Usar un corazón para alimentar a la mascota.  
-   - Explicar: “Al alimentar a la mascota, usamos un corazón y fortalecemos el vínculo emocional”.  
-
-5. **Cambio de estado de la mascota**  
-   - Mostrar transición de **triste → feliz**.  
-   - Resaltar el impacto visual/emocional como motivación.  
-
-6. **Progreso**  
-   - Ir a la pantalla de Progreso.  
-   - Mostrar:  
-     - Días completados.  
-     - Porcentaje de misiones completadas hoy.  
-
-7. **Notificación**  
-   - Mostrar (o simular) la **notificación diaria**.  
-   - Explicar que cada día el usuario recibe un pequeño empujón motivacional para seguir con sus hábitos.  
-
-Cierre hablado sugerido:  
-> “En solo un minuto, Wellness Quest convierte pequeñas acciones en una experiencia emocional positiva. Misiones simples, una mascota que te acompaña y un progreso claro que motiva a volver cada día.”
+**Para contribuir:**
+1. Fork el repositorio
+2. Crea una rama con tu feature (`git checkout -b feature/AmazingFeature`)
+3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
+4. Push a la rama (`git push origin feature/AmazingFeature`)
+5. Abre un Pull Request
 
 ---
 
-## 🚀 Estrategia para la demo del hackathon
+## 👨‍💻 Autor
 
-- **Priorizar fluidez sobre complejidad técnica.**  
-- Asegurar que el flujo **Onboarding → Home → Completar misión → Alimentar mascota → Progreso** funcione sin errores.  
-- Tener un estado de demo listo (por ejemplo, app preconfigurada en un dispositivo con un día casi completo).  
-
----
-
-## 🎭 Tips para la Demo (¡IMPORTANTE!)
-
-### Antes de presentar
-
-**15 minutos antes de la demo:**
-1. ✅ Abre el proyecto con `npm run start` (o `npx expo start --tunnel` si la red es problemática)
-2. ✅ Escanea el QR con Expo Go y deja la app abierta
-3. ✅ Mantén la app en primer plano para evitar recargas
-4. ✅ Ten el navegador con `npm run web` listo como backup
-
-**Preparación del estado:**
-- Aplica datos demo para tener un estado ideal (ver atajos secretos abajo)
-- O resetea completamente para mostrar onboarding desde cero
-- Ten clara la historia: ¿usuario nuevo o usuario con progreso?
-
-### Atajos secretos implementados
-
-**🎭 Activar datos demo completos:**
-- **Long press (2 segundos)** en el título "Wellness Quest" en Home
-- Esto carga: 5 corazones, 150 monedas, 7 días de streak, 2/3 misiones completadas
-
-**🪙 Añadir monedas para casino:**
-- **Long press (3 segundos)** en el contador de monedas (🪙)
-- Añade +1000 monedas instantáneamente para demostrar casino
-
-**🗑️ Resetear todo (desde cualquier pantalla):**
-```javascript
-import StorageService from './src/services/StorageService';
-await StorageService.clearAllData();
-```
-
-### Estado de features para mencionar
-
-**✅ Completamente funcionales:**
-- Onboarding (4 preguntas personalizadas)
-- Generación inteligente de misiones basada en preferencias
-- Economía doble (corazones + monedas)
-- Mascota emocional (feliz/triste) con animaciones
-- Progreso con días completados (streak)
-- Casino con ruleta animada e inventario
-- Persistencia completa con AsyncStorage
-
-**⚠️ Simplificadas (mencionar honestamente):**
-- **Notificaciones:** El sistema está implementado pero simplificado para la demo
-  - Mencionar: "Las notificaciones están programadas para futuras iteraciones"
-  - Mostrar el código del `NotificationService` si preguntan
-
-### Plan B si algo falla
-
-**Si Expo Go se cuelga:**
-1. Usa `npm run web` → muestra en navegador
-2. Explica: "Expo permite desarrollo multiplataforma, aquí está la versión web"
-
-**Si la red falla:**
-1. Cambia a modo Tunnel: `npx expo start --tunnel`
-2. O usa hotspot de tu móvil como red compartida
-
-**Si AsyncStorage da problemas:**
-1. Abre Dev Menu (agita el dispositivo o `Cmd+D`/`Ctrl+M`)
-2. Selecciona "Reload"
-3. Si persiste: muestra el código y explica la arquitectura
-
-### Discurso de cierre sugerido
-
-> "Wellness Quest demuestra que la tecnología puede hacer el bienestar accesible y motivador. Con React Native y Expo, construimos una experiencia multiplataforma en 3 días que personaliza hábitos, gamifica el progreso y crea conexión emocional. El código está en GitHub, y el siguiente paso es incorporar integración con wearables y notificaciones inteligentes basadas en patrones de uso."
-
-### Respuestas a preguntas frecuentes
-
-**P: ¿Por qué React Native en vez de nativo?**
-R: "Permite desarrollo rápido multiplataforma (iOS/Android/Web) con una sola codebase, ideal para MVPs y hackathons. Expo acelera aún más el desarrollo."
-
-**P: ¿Cómo se personalizan las misiones?**
-R: "El `MissionGenerator` usa un algoritmo que combina 4 parámetros del onboarding: objetivo de bienestar, disponibilidad, intensidad y estilo, generando misiones únicas cada día."
-
-**P: ¿Qué pasa con los datos si cierro la app?**
-R: "Todo se persiste localmente con AsyncStorage. El estado del juego, preferencias, inventario y progreso se guardan automáticamente y se restauran al reabrir."
-
-**P: ¿Por qué una mascota emocional?**
-R: "La investigación muestra que la conexión emocional aumenta la adherencia a hábitos. La mascota crea accountability sin presión, motivando de forma positiva."
+**Gael Guzmán**  
+- GitHub: [@gaelgm03](https://github.com/gaelgm03)
+- Proyecto: [Wellness Quest](https://github.com/gaelgm03/wellness-app)
+- LinkedIn: [Tu LinkedIn](https://www.linkedin.com/in/gael-guzman-munguia-190b6b332/)
 
 ---
 
-## 🧘‍♂️ Mensaje final
+## 🙏 Agradecimientos
 
-> “Wellness Quest demuestra que pequeños hábitos pueden generar grandes cambios. Misiones simples, motivación emocional y bienestar accesible para todos.”
+- **Desarrolladores de Expo y React Native** por las herramientas de desarrollo multiplataforma
+- **Windsurf AI** por acelerar el desarrollo con pair programming
+- **Comunidad open-source** por las librerías utilizadas
+
+---
+
+## 🧘‍♂️ Mensaje Final
+
+> **"Pequeños hábitos, grandes cambios."**
+> 
+> Wellness Quest combina gamificación y bienestar para hacer el autocuidado accesible y sostenible. Misiones personalizadas, motivación emocional y progreso visible que te acompaña cada día.
+
+**⭐ Si te gusta el proyecto, considera darle una estrella en GitHub!**
+
+---
+
+<p align="center">
+  Desarrollado con 💚 durante el hackathon iOSLab 2025
+</p>

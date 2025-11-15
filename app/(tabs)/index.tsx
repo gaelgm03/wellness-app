@@ -29,10 +29,12 @@ import { LinearGradient } from 'expo-linear-gradient';
 import DemoData from '../../src/data/DemoData';
 import { GameState, createInitialGameState } from '../../src/models/GameState';
 
-// 🖼️ IMÁGENES DE LA MASCOTA
+// 🖼️ IMÁGENES DE LA MASCOTA (4 estados según corazones diarios)
 const PET_IMAGES = {
-  happy: require('../../assets/images/pet-happy.jpg'),
-  sad: require('../../assets/images/pet-sad.jpg'),
+  sad: require('../../assets/images/pet-sad.png'),      // 0 corazones
+  neutral: require('../../assets/images/pet-neutral.png'), // 1 corazón
+  happy: require('../../assets/images/pet-happy.png'),     // 2 corazones
+  max: require('../../assets/images/pet-max.png'),         // 3 corazones (MAX)
 };
 
 import StorageService from '../../src/services/StorageService';
@@ -363,9 +365,17 @@ export default function HomeScreen() {
     // Guardar en persistencia
     await StorageService.saveGameState(updatedGameState);
 
+    // Mensaje de recompensa
+    const canCare = updatedGameState.petVisualState < 3;
+    const heartsAvailable = updatedGameState.hearts;
+    
+    const careMsg = canCare
+      ? `\n\n👉 Usa tus corazones en el botón "Cuidar" para mejorar el estado de tu mascota`
+      : `\n\n✨ ¡Tu mascota ya está al MÁXIMO de felicidad hoy!`;
+    
     Alert.alert(
       '¡Misión completada! ✅',
-      '🎉 Has ganado:\n🪙 +10 Monedas\n💝 +1 Corazón',
+      `🎉 Recompensas obtenidas:\n🪙 +10 Monedas\n💝 +1 Corazón (Total: ${heartsAvailable})${careMsg}`,
       [{ text: '¡Genial!' }]
     );
   };
@@ -449,7 +459,17 @@ export default function HomeScreen() {
     if (gameState.hearts === 0) {
       Alert.alert(
         'Sin corazones 💔',
-        'Completa misiones para ganar corazones y alimentar a tu mascota',
+        'Completa misiones para ganar corazones y cuidar a tu mascota',
+        [{ text: 'Entendido' }]
+      );
+      return;
+    }
+    
+    // Verificar si ya llegó al máximo
+    if (gameState.petVisualState >= 3) {
+      Alert.alert(
+        '¡Máximo alcanzado! ✨',
+        'Tu mascota ya está al máximo de felicidad por hoy.\n\nVuelve mañana para continuar cuidándola.',
         [{ text: 'Entendido' }]
       );
       return;
@@ -466,9 +486,21 @@ export default function HomeScreen() {
       
       await StorageService.saveGameState(updatedGameState);
       
+      // Mensaje según estado visual actualizado
+      const stateMessages = [
+        '', // No usado (estado 0 no muestra este mensaje)
+        '¡Tu mascota se siente mejor! 😊\nEstado: Neutral',
+        '¡Tu mascota está llena de energía! 💪\nEstado: Feliz',
+        '¡TU MASCOTA ESTÁ IMPARABLE! 🚀✨\nEstado: MÁXIMO'
+      ];
+      
+      const message = updatedGameState.petVisualState > 0 && updatedGameState.petVisualState <= 3
+        ? stateMessages[updatedGameState.petVisualState]
+        : 'Tu mascota está feliz y llena de energía';
+      
       Alert.alert(
         '¡Excelente! 😊',
-        'Tu mascota está feliz y llena de energía\n\n-1 corazón 💝',
+        `${message}\n\n-1 corazón 💝`,
         [{ text: '¡Genial!' }]
       );
     }
@@ -505,11 +537,29 @@ export default function HomeScreen() {
     );
   }
 
+  // 🎭 FUNCIÓN: Determinar imagen de mascota según estado visual (se actualiza al cuidar)
+  const getPetImageByState = (petVisualState: number) => {
+    if (petVisualState === 0) return PET_IMAGES.sad;       // Estado inicial
+    if (petVisualState === 1) return PET_IMAGES.neutral;   // 1 cuidado
+    if (petVisualState === 2) return PET_IMAGES.happy;     // 2 cuidados
+    return PET_IMAGES.max;                                 // 3 cuidados (MAX)
+  };
+
+  // 💬 FUNCIÓN: Mensajes específicos para cada estado
+  const getPetMessageByState = (petVisualState: number) => {
+    if (petVisualState === 0) return 'Necesito tu cuidado... 💙';
+    if (petVisualState === 1) return '¡Gracias! Me siento mejor 😊';
+    if (petVisualState === 2) return '¡Estoy lleno de energía! 💪';
+    return '¡SOY IMPARABLE HOY! 🚀✨'; // Estado 3 (MAX)
+  };
+
   const petDisplay = {
     emoji: gameState.pet.getMoodEmoji(),
     name: gameState.pet.name,
     status: gameState.pet.getStatusText(),
-    mood: gameState.pet.mood
+    mood: gameState.pet.mood,
+    image: getPetImageByState(gameState.petVisualState),
+    message: getPetMessageByState(gameState.petVisualState)
   };
   
   const completionPercentage = gameState.getTodayCompletionPercentage();
@@ -632,7 +682,7 @@ export default function HomeScreen() {
                 { transform: [{ scale: petAnimation }] }
               ]}>
                 <Image 
-                  source={petDisplay.mood === 'feliz' ? PET_IMAGES.happy : PET_IMAGES.sad}
+                  source={petDisplay.image}
                   style={styles.petImage}
                   resizeMode="contain"
                 />
@@ -670,8 +720,24 @@ export default function HomeScreen() {
               styles.petMessage,
               { opacity: pulseAnimation }
             ]}>
-              {petDisplay.mood === 'feliz' ? '¡Estoy lleno de energía! 💪' : 'Necesito tu cuidado... 💙'}
+              {petDisplay.message}
             </Animated.Text>
+            
+            {/* 💖 INDICADOR DE ESTADO DE MASCOTA */}
+            <View style={styles.dailyHeartsIndicator}>
+              <Text style={styles.dailyHeartsLabel}>Estado de Diem:</Text>
+              <View style={styles.dailyHeartsRow}>
+                {[0, 1, 2].map((index) => (
+                  <Text key={index} style={styles.dailyHeartIcon}>
+                    {index < gameState.petVisualState ? '💖' : '🤍'}
+                  </Text>
+                ))}
+              </View>
+              <Text style={styles.dailyHeartsCount}>
+                {gameState.petVisualState}/3
+                {gameState.petVisualState >= 3 && ' ✨ ¡MAX!'}
+              </Text>
+            </View>
           </View>
 
           {/* Botones de acción modernos CON ANIMACIONES */}
@@ -681,14 +747,16 @@ export default function HomeScreen() {
                 style={[
                   styles.modernButton,
                   styles.feedButtonModern,
-                  gameState.hearts === 0 && styles.modernButtonDisabled
+                  (gameState.hearts === 0 || gameState.petVisualState >= 3) && styles.modernButtonDisabled
                 ]}
                 onPress={handleFeedPet}
-                disabled={gameState.hearts === 0}
+                disabled={gameState.hearts === 0 || gameState.petVisualState >= 3}
                 activeOpacity={0.8}
               >
                 <Text style={styles.modernButtonText}>
-                  {gameState.hearts === 0 ? '💔 Sin corazones' : '❤️ Cuidar'}
+                  {gameState.hearts === 0 ? '💔 Sin corazones' : 
+                   gameState.petVisualState >= 3 ? '✨ Máximo alcanzado' :
+                   '❤️ Cuidar'}
                 </Text>
               </TouchableOpacity>
             </Animated.View>
@@ -767,7 +835,7 @@ export default function HomeScreen() {
             
             <View style={styles.progressBottomItem}>
               <Text style={styles.progressBottomNumber}>{gameState.daysCompleted}</Text>
-              <Text style={styles.progressBottomLabel}>Consecutivos días</Text>
+              <Text style={styles.progressBottomLabel}>Días consecutivos</Text>
             </View>
           </View>
         </View>
@@ -1433,6 +1501,35 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 22,
   },
+  dailyHeartsIndicator: {
+    marginTop: 16,
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.6)',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 16,
+    borderWidth: 2,
+    borderColor: 'rgba(236, 72, 153, 0.3)',
+  },
+  dailyHeartsLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#6B7280',
+    marginBottom: 6,
+  },
+  dailyHeartsRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 6,
+  },
+  dailyHeartIcon: {
+    fontSize: 24,
+  },
+  dailyHeartsCount: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#EC4899',
+  },
   heroButtons: {
     flexDirection: 'row',
     gap: 12,
@@ -1490,7 +1587,7 @@ const styles = StyleSheet.create({
   progressModernCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
-    padding: 20,
+    padding: 24,
     width: '100%',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -1499,10 +1596,11 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   progressMainStats: {
-    marginBottom: 16,
+    marginBottom: 20,
+    alignItems: 'center',
   },
   progressStatBox: {
-    alignItems: 'flex-start',
+    alignItems: 'center',
   },
   progressStatLabel: {
     fontSize: 14,
@@ -1511,29 +1609,30 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   progressStatValue: {
-    fontSize: 32,
+    fontSize: 36,
     fontWeight: '800',
     color: '#7C3AED',
-    marginVertical: 4,
+    marginVertical: 6,
     letterSpacing: -1,
   },
   progressStatPercentage: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '700',
     color: '#10B981',
+    marginTop: 2,
   },
   progressBarLabel: {
     fontSize: 13,
     fontWeight: '600',
     color: '#6B7280',
-    marginBottom: 6,
+    marginBottom: 8,
   },
   progressBarModern: {
-    height: 16,
+    height: 18,
     backgroundColor: '#E5E7EB',
     borderRadius: 12,
     overflow: 'hidden',
-    marginBottom: 18,
+    marginBottom: 24,
     shadowColor: '#10B981',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
@@ -1551,20 +1650,25 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     width: '100%',
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: '#F3F4F6',
   },
   progressBottomItem: {
     alignItems: 'center',
+    flex: 1,
   },
   progressBottomNumber: {
-    fontSize: 22,
+    fontSize: 26,
     fontWeight: '800',
     color: '#7C3AED',
+    marginBottom: 4,
   },
   progressBottomLabel: {
     fontSize: 12,
     color: '#6B7280',
-    marginTop: 4,
-    fontWeight: '500',
+    fontWeight: '600',
+    textAlign: 'center',
   },
 
 });

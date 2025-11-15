@@ -14,6 +14,8 @@ export class GameState {
     // 🎰 ECONOMÍA CASINO (para ruleta y decoraciones)
     coins = 0, // Monedas obtenidas (+10 por misión completada)
     hearts = 3, // Corazones para alimentar mascota
+    dailyHearts = 0, // Corazones ganados HOY (máximo 3)
+    petVisualState = 0, // Estado visual de la mascota (0-3, se actualiza al cuidar)
     
     // Mascota emocional
     pet = DEFAULT_PET,
@@ -35,6 +37,8 @@ export class GameState {
   }) {
     this.coins = coins;
     this.hearts = hearts;
+    this.dailyHearts = dailyHearts;
+    this.petVisualState = petVisualState;
     this.pet = pet;
     this.userPreferences = userPreferences;
     this.dailyMissions = dailyMissions;
@@ -58,9 +62,14 @@ export class GameState {
 
   // ECONOMÍA: Alimentar mascota (cuesta 1 corazón)
   feedPet() {
-    if (this.hearts > 0) {
+    if (this.hearts > 0 && this.petVisualState < 3) {
       this.pet.feed();
       this.hearts -= 1;
+      
+      // Incrementar estado visual Y contador diario
+      this.petVisualState += 1;
+      this.dailyHearts += 1;
+      
       return true;
     }
     return false;
@@ -114,6 +123,10 @@ export class GameState {
       this.currentDate = today;
       this.generateDailyMissions();
       
+      // 🔄 RESETEAR CORAZONES DIARIOS A 0 (nuevo día, mascota vuelve a estado triste)
+      this.dailyHearts = 0;
+      this.petVisualState = 0; // Resetear estado visual
+      
       // Resetear estado de mascota si no la alimentaron ayer
       if (this.pet.mood === 'feliz') {
         // La mascota se pone triste si no la cuidan
@@ -142,6 +155,8 @@ export class GameState {
     return {
       coins: this.coins,
       hearts: this.hearts,
+      dailyHearts: this.dailyHearts,
+      petVisualState: this.petVisualState,
       pet: this.pet,
       userPreferences: this.userPreferences,
       dailyMissions: this.dailyMissions,
