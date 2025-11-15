@@ -481,7 +481,7 @@ export default function HomeScreen() {
   if (isLoading) {
     return (
       <LinearGradient
-        colors={['#F9FAFB', '#FFFFFF', '#F3F4F6']}
+        colors={['#FDF2F8', '#FCE7F3', '#F9A8D4']}
         style={styles.gradientContainer}
       >
         <View style={styles.loadingContainer}>
@@ -495,7 +495,7 @@ export default function HomeScreen() {
   if (!gameState) {
     return (
       <LinearGradient
-        colors={['#F9FAFB', '#FFFFFF', '#F3F4F6']}
+        colors={['#FDF2F8', '#FCE7F3', '#F9A8D4']}
         style={styles.gradientContainer}
       >
         <View style={styles.errorContainer}>
@@ -519,7 +519,7 @@ export default function HomeScreen() {
 
   return (
     <LinearGradient
-      colors={['#F9FAFB', '#FFFFFF', '#F3F4F6']}
+      colors={['#FDF2F8', '#FCE7F3', '#F9A8D4']}
       style={styles.gradientContainer}
     >
     <SafeAreaView style={styles.container}>
@@ -610,14 +610,7 @@ export default function HomeScreen() {
         <View style={styles.heroCard}>
           {/* Header del Hero */}
           <View style={styles.heroHeader}>
-            <View>
-              <Text style={styles.heroTitle}>Diem</Text>
-              <Text style={styles.heroSubtitle}>Actividades Diarias</Text>
-            </View>
-            <View style={styles.streakBadge}>
-              <Text style={styles.streakText}>{gameState.daysCompleted}</Text>
-              <Text style={styles.streakLabelModern}>días</Text>
-            </View>
+            <Text style={styles.heroTitle}>Diem</Text>
           </View>
 
           {/* 🌠 MASCOTA CON EFECTOS AVANZADOS */}
@@ -692,7 +685,7 @@ export default function HomeScreen() {
                 activeOpacity={0.8}
               >
                 <Text style={styles.modernButtonText}>
-                  💝 Alimentar
+                  ❤️ Cuidar
                 </Text>
               </TouchableOpacity>
             </Animated.View>
@@ -848,11 +841,15 @@ const styles = StyleSheet.create({
   heroGradient: {
     borderRadius: 16,
     overflow: 'hidden',
+    shadowOpacity: 0,
+    elevation: 0,
   },
   heroBlur: {
     flex: 1,
     borderRadius: 16,
     overflow: 'hidden',
+    shadowOpacity: 0,
+    elevation: 0,
   },
   progressBlur: {
     borderRadius: 16,
@@ -1323,31 +1320,35 @@ const styles = StyleSheet.create({
   // ESTILOS MODERNOS PARA EL NUEVO DISEÑO
   heroSection: {
     marginBottom: 24,
+    shadowOpacity: 0,
+    elevation: 0,
   },
   heroCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 20,
     padding: 24,
     marginBottom: 20,
+    width: '100%',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
     alignItems: 'center',
   },
   heroHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: 16,
     width: '100%',
   },
   heroTitle: {
-    fontSize: 22,
+    fontSize: 28,
     fontWeight: '800',
     color: '#1F2937',
     letterSpacing: -0.5,
+    textAlign: 'center',
   },
   heroSubtitle: {
     fontSize: 14,
@@ -1385,13 +1386,13 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   petBackground: {
-    width: 170,
-    height: 130,
+    width: 190,
+    height: 145,
     borderRadius: 24,
     backgroundColor: '#F3E8FF',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 14,
+    marginBottom: 12,
     position: 'relative',
     overflow: 'hidden',
     borderWidth: 3,
@@ -1409,8 +1410,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   petImage: {
-    width: 150,
-    height: 110,
+    width: 170,
+    height: 125,
   },
   petMessage: {
     fontSize: 16,
@@ -1432,15 +1433,10 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 6,
   },
   feedButtonModern: {
-    backgroundColor: '#10B981',
-    shadowColor: '#10B981',
+    backgroundColor: '#FF1493',
+    shadowColor: '#FF1493',
   },
   casinoButtonModern: {
     backgroundColor: '#7C3AED',
