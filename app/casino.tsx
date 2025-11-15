@@ -4,18 +4,21 @@
  * Funcionalidades: Girar ruleta, mostrar premios, gestionar inventario
  */
 
+import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
-    Alert,
-    Animated,
-    Easing,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View
+  Alert,
+  Animated,
+  Easing,
+  Platform,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  Vibration,
+  View
 } from 'react-native';
 import { Decoration } from '../src/models/Decoration';
 import { GameState } from '../src/models/GameState';
@@ -32,6 +35,8 @@ export default function CasinoScreen() {
   // Animaciones
   const [rouletteAnim] = useState(new Animated.Value(0));
   const [prizeAnim] = useState(new Animated.Value(0));
+  const [spinButtonAnim] = useState(new Animated.Value(1));
+  const [backButtonAnim] = useState(new Animated.Value(1));
 
   useEffect(() => {
     loadCasinoData();
@@ -61,8 +66,32 @@ export default function CasinoScreen() {
     }
   };
 
+  // 🎮 Animación de botones
+  const animateButtonPress = (buttonAnim: Animated.Value) => {
+    Animated.sequence([
+      Animated.spring(buttonAnim, {
+        toValue: 0.92,
+        friction: 3,
+        tension: 200,
+        useNativeDriver: true,
+      }),
+      Animated.spring(buttonAnim, {
+        toValue: 1,
+        friction: 3,
+        tension: 200,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  };
+
   const handleSpinRoulette = async () => {
     if (!gameState || isSpinning) return;
+
+    // 🎮 Animar botón y haptic
+    animateButtonPress(spinButtonAnim);
+    if (Platform.OS !== 'web') {
+      Vibration.vibrate(10);
+    }
 
     setIsSpinning(true);
     
@@ -186,36 +215,59 @@ export default function CasinoScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.loadingContainer}>
-          <Text style={styles.loadingText}>🎰 Cargando Casino...</Text>
-        </View>
-      </SafeAreaView>
+      <LinearGradient
+        colors={['#FEF3C7', '#FDE68A', '#FCD34D']}
+        style={{ flex: 1 }}
+      >
+        <SafeAreaView style={styles.container}>
+          <View style={styles.loadingContainer}>
+            <Text style={styles.loadingText}>🎰 Cargando Casino...</Text>
+          </View>
+        </SafeAreaView>
+      </LinearGradient>
     );
   }
 
   if (!gameState) {
     return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>Error cargando el casino</Text>
-          <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-            <Text style={styles.backButtonText}>Volver</Text>
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
+      <LinearGradient
+        colors={['#FEF3C7', '#FDE68A', '#FCD34D']}
+        style={{ flex: 1 }}
+      >
+        <SafeAreaView style={styles.container}>
+          <View style={styles.errorContainer}>
+            <Text style={styles.errorText}>Error cargando el casino</Text>
+            <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+              <Text style={styles.backButtonText}>Volver</Text>
+            </TouchableOpacity>
+          </View>
+        </SafeAreaView>
+      </LinearGradient>
     );
   }
 
   const stats = CasinoService.getCasinoStats(inventory);
 
   return (
-    <SafeAreaView style={styles.container}>
-      {/* Header del Casino */}
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Text style={styles.backButtonText}>← Volver</Text>
-        </TouchableOpacity>
+    <LinearGradient
+      colors={['#FEF3C7', '#FDE68A', '#FCD34D']}
+      style={{ flex: 1 }}
+    >
+      <SafeAreaView style={styles.container}>
+        {/* Header del Casino */}
+        <View style={styles.header}>
+          <Animated.View style={{ transform: [{ scale: backButtonAnim }] }}>
+            <TouchableOpacity 
+              style={styles.backButton} 
+              onPress={() => {
+                animateButtonPress(backButtonAnim);
+                setTimeout(() => router.back(), 100);
+              }}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.backButtonText}>← Volver</Text>
+            </TouchableOpacity>
+          </Animated.View>
         
         <Text style={styles.title}>🎰 CASINO WELLNESS</Text>
         
@@ -260,18 +312,21 @@ export default function CasinoScreen() {
             )}
           </View>
 
-          <TouchableOpacity
-            style={[
-              styles.spinButton,
-              (isSpinning || gameState.coins < CasinoService.SPIN_COST) && styles.spinButtonDisabled
-            ]}
-            onPress={handleSpinRoulette}
-            disabled={isSpinning || gameState.coins < CasinoService.SPIN_COST}
-          >
-            <Text style={styles.spinButtonText}>
-              {isSpinning ? '🌀 GIRANDO...' : `🎰 GIRAR (${CasinoService.SPIN_COST} 🪙)`}
-            </Text>
-          </TouchableOpacity>
+          <Animated.View style={{ transform: [{ scale: spinButtonAnim }] }}>
+            <TouchableOpacity
+              style={[
+                styles.spinButton,
+                (isSpinning || gameState.coins < CasinoService.SPIN_COST) && styles.spinButtonDisabled
+              ]}
+              onPress={handleSpinRoulette}
+              disabled={isSpinning || gameState.coins < CasinoService.SPIN_COST}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.spinButtonText}>
+                {isSpinning ? '🌀 GIRANDO...' : `🎰 GIRAR (${CasinoService.SPIN_COST} 🪙)`}
+              </Text>
+            </TouchableOpacity>
+          </Animated.View>
 
           <Text style={styles.infoText}>
             💡 Completa misiones para ganar monedas y decorar tu mascota
@@ -305,14 +360,15 @@ export default function CasinoScreen() {
           </View>
         </View>
       </ScrollView>
-    </SafeAreaView>
+      </SafeAreaView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F9F6',
+    backgroundColor: 'transparent',
   },
   loadingContainer: {
     flex: 1,
@@ -320,8 +376,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   loadingText: {
-    fontSize: 18,
-    color: '#4CAF50',
+    fontSize: 20,
+    color: '#1F2937',
+    fontWeight: '700',
   },
   errorContainer: {
     flex: 1,
@@ -331,7 +388,7 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 16,
-    color: '#666',
+    color: '#474950',
     marginBottom: 20,
   },
   header: {
@@ -342,36 +399,48 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 3,
+    shadowColor: '#F59E0B',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 5,
   },
   backButton: {
-    backgroundColor: '#4CAF50',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
+    backgroundColor: '#1F2937',
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+    borderRadius: 16,
+    shadowColor: '#1F2937',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 4,
   },
   backButtonText: {
     color: '#FFFFFF',
-    fontWeight: 'bold',
+    fontWeight: '700',
+    fontSize: 14,
   },
   title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#4CAF50',
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#F59E0B',
+    letterSpacing: -0.5,
   },
   coinsDisplay: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFF3CD',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    backgroundColor: '#FFFBEB',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
     borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#F39C12',
+    borderWidth: 2,
+    borderColor: '#F59E0B',
+    shadowColor: '#F59E0B',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
   },
   coinsIcon: {
     fontSize: 18,
@@ -379,41 +448,55 @@ const styles = StyleSheet.create({
   },
   coinsCount: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#F39C12',
+    fontWeight: '800',
+    color: '#F59E0B',
   },
   content: {
     flex: 1,
-    padding: 20,
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 20,
   },
   rouletteSection: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 20,
+    borderRadius: 20,
+    padding: 24,
     marginBottom: 20,
     alignItems: 'center',
+    shadowColor: '#F59E0B',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    elevation: 5,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 16,
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#1F2937',
+    marginBottom: 18,
+    letterSpacing: -0.5,
   },
   rouletteContainer: {
     position: 'relative',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 20,
+    marginVertical: 20,
+    width: '100%',
   },
   roulette: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: '#FFD700',
+    width: 130,
+    height: 130,
+    borderRadius: 65,
+    backgroundColor: '#F59E0B',
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 4,
-    borderColor: '#F39C12',
+    borderWidth: 5,
+    borderColor: '#EC4899',
+    shadowColor: '#F59E0B',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
+    elevation: 8,
   },
   rouletteText: {
     fontSize: 48,
@@ -427,7 +510,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 20,
     borderWidth: 2,
-    borderColor: '#4CAF50',
+    borderColor: '#5fb294',
   },
   prizeEmoji: {
     fontSize: 24,
@@ -435,71 +518,98 @@ const styles = StyleSheet.create({
   prizeName: {
     fontSize: 12,
     fontWeight: 'bold',
-    color: '#4CAF50',
+    color: '#23314b',
   },
   spinButton: {
-    backgroundColor: '#F39C12',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 25,
+    backgroundColor: '#F59E0B',
+    paddingHorizontal: 32,
+    paddingVertical: 16,
+    borderRadius: 20,
     marginBottom: 12,
+    shadowColor: '#F59E0B',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
   },
   spinButtonDisabled: {
-    backgroundColor: '#BDC3C7',
+    backgroundColor: '#D1D5DB',
+    shadowOpacity: 0.1,
   },
   spinButtonText: {
     color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontSize: 17,
+    fontWeight: '800',
     textAlign: 'center',
+    letterSpacing: 0.5,
   },
   infoText: {
     fontSize: 12,
-    color: '#666',
+    color: '#474950',
     textAlign: 'center',
     fontStyle: 'italic',
   },
   statsSection: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 20,
+    borderRadius: 20,
+    padding: 24,
     marginBottom: 20,
+    shadowColor: '#7C3AED',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 4,
   },
   statsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
+    width: '100%',
   },
   statItem: {
     alignItems: 'center',
+    justifyContent: 'center',
+    flex: 1,
   },
   statNumber: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#4CAF50',
+    fontSize: 26,
+    fontWeight: '800',
+    color: '#7C3AED',
   },
   statLabel: {
-    fontSize: 12,
-    color: '#666',
+    fontSize: 13,
+    color: '#6B7280',
     marginTop: 4,
+    fontWeight: '500',
   },
   inventorySection: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 20,
+    borderRadius: 20,
+    padding: 24,
+    shadowColor: '#EC4899',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 4,
   },
   inventoryGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
+    width: '100%',
   },
   inventoryItem: {
     width: '48%',
-    backgroundColor: '#F8F9FA',
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 12,
+    backgroundColor: '#F9FAFB',
+    borderRadius: 16,
+    padding: 14,
+    marginBottom: 14,
     alignItems: 'center',
-    borderWidth: 2,
+    borderWidth: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
   },
   inventoryItemLocked: {
     opacity: 0.5,
@@ -513,19 +623,26 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: 8,
+    width: '100%',
   },
   equipButton: {
-    backgroundColor: '#4CAF50',
-    paddingHorizontal: 12,
-    paddingVertical: 4,
+    backgroundColor: '#10B981',
+    paddingHorizontal: 14,
+    paddingVertical: 6,
     borderRadius: 12,
+    shadowColor: '#10B981',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
   },
   equipButtonActive: {
-    backgroundColor: '#2196F3',
+    backgroundColor: '#7C3AED',
+    shadowColor: '#7C3AED',
   },
   equipButtonText: {
     color: '#FFFFFF',
-    fontSize: 10,
-    fontWeight: 'bold',
+    fontSize: 11,
+    fontWeight: '700',
   },
 });
