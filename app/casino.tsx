@@ -8,17 +8,17 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
-  Alert,
-  Animated,
-  Easing,
-  Platform,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  Vibration,
-  View
+    Alert,
+    Animated,
+    Easing,
+    Platform,
+    SafeAreaView,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    Vibration,
+    View
 } from 'react-native';
 import { Decoration } from '../src/models/Decoration';
 import { GameState } from '../src/models/GameState';
@@ -376,7 +376,7 @@ export default function CasinoScreen() {
       <ScrollView style={styles.content}>
         {/* Sección de Ruleta */}
         <View style={styles.rouletteSection}>
-          <Text style={styles.sectionTitle}>🎲 Ruleta de Decoraciones</Text>
+          <Text style={styles.sectionTitle}>🎲 Ruleta de Premios</Text>
           
           <View style={styles.rouletteContainer}>
             <Animated.View style={[
@@ -476,13 +476,13 @@ export default function CasinoScreen() {
           </Animated.View>
 
           <Text style={styles.infoText}>
-            💡 Completa misiones para ganar monedas y decorar tu mascota
+            💡 Completa misiones para ganar monedas y ganar recompensas
           </Text>
         </View>
 
         {/* Estadísticas */}
         <View style={styles.statsSection}>
-          <Text style={styles.sectionTitle}>📊 Tu Colección</Text>
+          <Text style={styles.sectionTitle}>📊 Progreso</Text>
           <View style={styles.statsContainer}>
             <View style={styles.statItem}>
               <Text style={styles.statNumber}>{stats.unlockedDecorations}</Text>
@@ -501,7 +501,7 @@ export default function CasinoScreen() {
 
         {/* Inventario */}
         <View style={styles.inventorySection}>
-          <Text style={styles.sectionTitle}>🎒 Inventario de Decoraciones</Text>
+          <Text style={styles.sectionTitle}>📦 Tu Colección</Text>
           <View style={styles.inventoryGrid}>
             {inventory.map(renderInventoryItem)}
           </View>
@@ -716,6 +716,7 @@ const styles = StyleSheet.create({
     color: '#474950',
     textAlign: 'center',
     fontStyle: 'italic',
+    marginTop: 16,
   },
   statsSection: {
     backgroundColor: '#FFFFFF',
